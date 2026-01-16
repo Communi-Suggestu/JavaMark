@@ -19,10 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JavaMarkIntegrationTest
 {
 
-    /**
-     * Running this test needs the following JVM argument:
-     * --add-exports jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED
-     */
     @Test
     void testJavadocIntegration() throws Exception {
         Method execute = Class.forName("jdk.javadoc.internal.tool.Main").getMethod("execute", String[].class);
