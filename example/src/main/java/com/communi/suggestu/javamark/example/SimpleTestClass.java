@@ -145,6 +145,50 @@ public class SimpleTestClass
     }
 
     /**
+     * Intermediary class to determine several orders in class and type output
+     */
+    public static class InheritedAndImplementingClass extends SimpleTestClass implements ExtendedInterface {
+
+        /**
+         * Protected constructor
+         */
+        protected InheritedAndImplementingClass()
+        {
+        }
+
+        /**
+         * Some different JavaDoc
+         */
+        @Override
+        public void apply()
+        {
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Object value()
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Terminal class in a complex tree.
+     */
+    public static class TerminalClass extends InheritedAndImplementingClass {
+        /**
+         * Private constructor on inner class is deprecated
+         * @deprecated Because I need to test this.
+         */
+        @Deprecated
+        private TerminalClass()
+        {
+        }
+    }
+
+    /**
      * Complex class inheritance with generic
      * @param <G> The generic parameter
      */
@@ -173,6 +217,39 @@ public class SimpleTestClass
         public Object value()
         {
             return null;
+        }
+    }
+
+    /**
+     * Abstract class with complext generics, inheritance and implementation.
+     *
+     * @param <B> First generic parameter
+     * @param <A> Second generic parameter
+     */
+    public abstract static class InheritedComplexClass<B extends Number, A> extends ComplexClass<A> implements List<B> {
+
+        /**
+         * Protected constructor in
+         */
+        protected InheritedComplexClass()
+        {
+        }
+
+        /**
+         * Complex method which accepts a wildcard generic bound
+         *
+         * @param complexClass The complex class with generic wildcard bound
+         */
+        public static void SomeMethod(ComplexClass<? extends Number> complexClass) {
+        }
+
+
+        /**
+         * Complex method which accepts a wildcard generic unbound
+         *
+         * @param complexClass The complex class with generic wildcard unbound
+         */
+        public static void SomeOtherMethod(ComplexClass<?> complexClass) {
         }
     }
 }

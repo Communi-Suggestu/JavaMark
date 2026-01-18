@@ -5,4 +5,10 @@ package com.communi.suggestu.javamark.example.inner.inner;
  */
 public class EmptyClass
 {
+    /**
+     * Package private constructor
+     */
+    EmptyClass()
+    {
+    }
 }

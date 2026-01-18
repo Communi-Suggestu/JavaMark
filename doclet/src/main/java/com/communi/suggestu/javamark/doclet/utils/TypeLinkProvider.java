@@ -4,6 +4,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +31,9 @@ public class TypeLinkProvider {
             return getTypeFileName(targetType);
         }
 
+        if (!typeUniverse.contains(targetType))
+            return null;
+
         if (!(sourceType instanceof TypeElement) && !(sourceType instanceof PackageElement)) {
             return null;
         }
@@ -51,7 +57,17 @@ public class TypeLinkProvider {
 
     private String getTypeFileName(TypeMirror type) {
         TypeElement el = typeUniverse.asTypeElement(type);
-        return el.getSimpleName() + ".md";
+        return typeFilePath(el) + ".md";
+    }
+
+    private String typeFilePath(TypeElement typeElement)
+    {
+        if (typeElement.getEnclosingElement() instanceof TypeElement outer)
+        {
+            return typeFilePath(outer) + "$" + typeElement.getSimpleName();
+        }
+
+        return typeElement.getSimpleName().toString();
     }
 }
 

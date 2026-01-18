@@ -11,13 +11,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class JavaMarkIntegrationTest
 {
+
+    private static final String COMPARISON_OPTIONS_FILE = "../example/build/tmp/javadoc/javadoc.options";
+    private static final String COMPARISON_DEFAULT_OUTPUT = "../example/build/docs";
 
     @Test
     void testJavadocIntegration() throws Exception {
@@ -32,6 +37,15 @@ public class JavaMarkIntegrationTest
             "-d", outputDirectory,
             "-subpackages", "com.communi.suggestu.javamark.example",
         });
+        assertThat(result).isEqualTo(0);
+    }
+
+    @Test
+    void testHtmlJavadocIntegration() throws Exception {
+        Method execute = Class.forName("jdk.javadoc.internal.tool.Main").getMethod("execute", String[].class);
+        execute.setAccessible(true);
+        deleteRecursively(COMPARISON_DEFAULT_OUTPUT);
+        int result = (int) execute.invoke(null, (Object) processDefaultOptions(Files.readAllLines(Path.of(COMPARISON_OPTIONS_FILE)).toArray(String[]::new)));
         assertThat(result).isEqualTo(0);
     }
 
@@ -59,5 +73,35 @@ public class JavaMarkIntegrationTest
         return Arrays.stream(System.getProperty("java.class.path").split(File.pathSeparator))
             .filter(s -> !s.contains("ideaIU")) // Filter out Intellij jar files.
             .collect(Collectors.joining(File.pathSeparator));
+    }
+
+    private String[] processDefaultOptions(String[] input) {
+        final List<String> results = new ArrayList<>();
+        for (String s : input)
+        {
+            if (s.startsWith("-classpath")) {
+                s = s.replace("-classpath", "--module-path");
+            }
+
+            if (s.contains(" ")) {
+                var firstPart = s.substring(0, s.indexOf(" "));
+                var remainder = s.substring(firstPart.length() + 1);
+
+                if (remainder.startsWith("'") && remainder.endsWith("'")) {
+                    remainder = remainder.substring(1, remainder.length() - 1);
+                }
+
+                results.add(firstPart);
+                results.add(remainder);
+                continue;
+            }
+
+            if (s.startsWith("'") && s.endsWith("'")) {
+                s = s.substring(1, s.length() - 1);
+            }
+            results.add(s);
+        }
+
+        return results.stream().filter(s -> !s.isBlank()).toArray(String[]::new);
     }
 }

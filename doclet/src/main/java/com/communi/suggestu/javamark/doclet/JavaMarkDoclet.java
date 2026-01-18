@@ -2,6 +2,7 @@ package com.communi.suggestu.javamark.doclet;
 
 import com.communi.suggestu.javamark.doclet.builders.PackageFileBuilder;
 import com.communi.suggestu.javamark.doclet.builders.PackageLinkBuilder;
+import com.communi.suggestu.javamark.doclet.builders.TypeDisplayNameBuilder;
 import com.communi.suggestu.javamark.doclet.builders.TypeFileBuilder;
 import com.communi.suggestu.javamark.doclet.builders.TypeLinkBuilder;
 import com.communi.suggestu.javamark.doclet.utils.PackageLinkProvider;
@@ -77,9 +78,10 @@ public class JavaMarkDoclet implements Doclet
                 .map(TypeElement::asType)
                 .collect(Collectors.toSet());
 
-            var typeUniverse = new TypeUniverse(environment.getElementUtils(), environment.getTypeUtils(), knownTypes, knownPackages);
+            var typeUniverse = new TypeUniverse(environment, environment.getElementUtils(), environment.getTypeUtils(), knownTypes, knownPackages);
             var typeLinkProvider = new TypeLinkProvider(typeUniverse, includedTypes);
-            var typeLinkBuilder = new TypeLinkBuilder(typeLinkProvider, typeUniverse);
+            var typeLinkBuilder = new TypeLinkBuilder(typeUniverse, typeLinkProvider);
+            var displayNameBuilder = new TypeDisplayNameBuilder(typeUniverse, typeLinkProvider);
             var packageLinkProvider = new PackageLinkProvider(knownPackages);
             var packageLinkBuilder = new PackageLinkBuilder(packageLinkProvider);
 
@@ -91,7 +93,7 @@ public class JavaMarkDoclet implements Doclet
                 }
                 else if (includedElement instanceof TypeElement typeElement)
                 {
-                    processType(environment, typeElement, typeLinkBuilder, packageLinkBuilder);
+                    processType(environment, typeUniverse, typeElement, typeLinkBuilder, packageLinkBuilder, displayNameBuilder);
                 }
             }
         }
@@ -121,14 +123,17 @@ public class JavaMarkDoclet implements Doclet
             .build();
     }
 
-    private void processType(DocletEnvironment environment, TypeElement typeElement, TypeLinkBuilder typeLinkBuilder, PackageLinkBuilder packageLinkBuilder) throws IOException
+    private void processType(DocletEnvironment environment, final TypeUniverse typeUniverse, TypeElement typeElement, TypeLinkBuilder typeLinkBuilder, PackageLinkBuilder packageLinkBuilder,
+        final TypeDisplayNameBuilder displayNameBuilder) throws IOException
     {
         var targetPath = configuration.getDestination().resolve(typeFilePath(typeElement) + ".md");
         new TypeFileBuilder(
+            typeUniverse,
             environment.getTypeUtils(),
             targetPath,
             packageLinkBuilder,
-            typeLinkBuilder)
+            typeLinkBuilder,
+            displayNameBuilder)
             .from(typeElement)
             .build();
     }
