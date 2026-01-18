@@ -131,7 +131,7 @@ public class AnnotationBuilder
             else {
                 addAnnotations(annotationElement, annotation, pairs, this.lineBreak);
             }
-            annotation.append(lineBreak ? Constants.NEW_LINE : "");
+            annotation.append(lineBreak ? Constants.MARKDOWN_NEW_LINE : "");
             results.append(annotation);
         }
 
@@ -156,7 +156,7 @@ public class AnnotationBuilder
                 } else {
                     annotation.append(",");
                     if (lineBreak) {
-                        annotation.append(Constants.NEW_LINE);
+                        annotation.append(Constants.MARKDOWN_NEW_LINE);
                         int spaces = annotationDoc.getSimpleName().length() + 2;
                         for (int k = 0; k < (spaces); k++) {
                             annotation.append(" ");

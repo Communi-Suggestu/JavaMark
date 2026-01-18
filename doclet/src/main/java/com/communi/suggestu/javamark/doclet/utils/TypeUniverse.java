@@ -467,6 +467,10 @@ public class TypeUniverse {
         return e.getModifiers().contains(Modifier.PUBLIC);
     }
 
+    public boolean isClass(Element e) {
+        return e.getKind().isClass();
+    }
+
     /**
      * Returns true if this class is linkable and false if we can't link to it.
      *

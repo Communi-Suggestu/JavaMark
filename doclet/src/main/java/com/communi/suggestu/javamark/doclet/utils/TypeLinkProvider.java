@@ -64,7 +64,7 @@ public class TypeLinkProvider {
     {
         if (typeElement.getEnclosingElement() instanceof TypeElement outer)
         {
-            return typeFilePath(outer) + "$" + typeElement.getSimpleName();
+            return typeFilePath(outer) + "." + typeElement.getSimpleName();
         }
 
         return typeElement.getSimpleName().toString();

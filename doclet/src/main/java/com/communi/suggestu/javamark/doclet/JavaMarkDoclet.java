@@ -12,6 +12,12 @@ import com.sun.source.util.DocTrees;
 import jdk.javadoc.doclet.Doclet;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
+import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
+import jdk.javadoc.internal.doclets.formats.html.HtmlDoclet;
+import jdk.javadoc.internal.doclets.toolkit.util.ClassTree;
+import jdk.javadoc.internal.doclets.toolkit.util.DocFile;
+import jdk.javadoc.internal.doclets.toolkit.util.DocPath;
+import org.apache.commons.io.FileUtils;
 
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -19,18 +25,19 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JavaMarkDoclet implements Doclet
 {
-    private Configuration configuration;
+    private final HtmlDoclet innerDoclet = new HtmlDoclet(this);
 
     @Override
     public void init(final Locale locale, final Reporter reporter)
     {
-        configuration = new Configuration();
+        innerDoclet.init(locale, reporter);
     }
 
     @Override
@@ -42,7 +49,7 @@ public class JavaMarkDoclet implements Doclet
     @Override
     public Set<? extends Option> getSupportedOptions()
     {
-        return configuration.getSupportedOptions();
+        return getConfiguration().getOptions().getSupportedOptions();
     }
 
     @Override
@@ -51,18 +58,32 @@ public class JavaMarkDoclet implements Doclet
         return SourceVersion.RELEASE_17;
     }
 
+    public HtmlConfiguration getConfiguration()
+    {
+        return innerDoclet.getConfiguration();
+    }
+
     @Override
     public boolean run(final DocletEnvironment environment)
     {
+        innerDoclet.run(environment);
+        DocFile outputDir = DocFile.createFileForOutput(
+            getConfiguration(),
+            DocPath.create("/")
+        );
+
         try
         {
-            if (!configuration.isValid())
-            {
-                throw new IllegalStateException("Configuration was not valid!");
-            }
+            FileUtils.deleteDirectory(Path.of(outputDir.getPath()).toFile());
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
 
-            configuration.prepare();
-
+        try
+        {
+            var classTree = new ClassTree(getConfiguration());
             var knownTypes = environment.getIncludedElements()
                 .stream()
                 .filter(TypeElement.class::isInstance)
@@ -93,7 +114,7 @@ public class JavaMarkDoclet implements Doclet
                 }
                 else if (includedElement instanceof TypeElement typeElement)
                 {
-                    processType(environment, typeUniverse, typeElement, typeLinkBuilder, packageLinkBuilder, displayNameBuilder);
+                    processType(environment, typeUniverse, classTree, typeElement, typeLinkBuilder, packageLinkBuilder, displayNameBuilder);
                 }
             }
         }
@@ -112,9 +133,12 @@ public class JavaMarkDoclet implements Doclet
         final DocTrees docTrees)
         throws IOException
     {
-        var targetPath = configuration.getDestination().resolve(packageFilePath(element) + "/index.md");
+        DocFile target = DocFile.createFileForOutput(
+            getConfiguration(),
+            DocPath.create(packageFilePath(element) + "/index.md")
+        );
         new PackageFileBuilder(
-            targetPath,
+            Path.of(target.getPath()),
             typeLinkBuilder,
             packageLinkBuilder,
             typeUniverse,
@@ -123,14 +147,21 @@ public class JavaMarkDoclet implements Doclet
             .build();
     }
 
-    private void processType(DocletEnvironment environment, final TypeUniverse typeUniverse, TypeElement typeElement, TypeLinkBuilder typeLinkBuilder, PackageLinkBuilder packageLinkBuilder,
+    private void processType(DocletEnvironment environment, final TypeUniverse typeUniverse,
+        final ClassTree classTree,
+        TypeElement typeElement, TypeLinkBuilder typeLinkBuilder, PackageLinkBuilder packageLinkBuilder,
         final TypeDisplayNameBuilder displayNameBuilder) throws IOException
     {
-        var targetPath = configuration.getDestination().resolve(typeFilePath(typeElement) + ".md");
+        DocFile target = DocFile.createFileForOutput(
+            getConfiguration(),
+            DocPath.create(typeFilePath(typeElement) + ".md")
+        );
         new TypeFileBuilder(
+            getConfiguration(),
             typeUniverse,
+            classTree,
             environment.getTypeUtils(),
-            targetPath,
+            Path.of(target.getPath()),
             packageLinkBuilder,
             typeLinkBuilder,
             displayNameBuilder)
@@ -147,7 +178,7 @@ public class JavaMarkDoclet implements Doclet
     {
         if (typeElement.getEnclosingElement() instanceof TypeElement outer)
         {
-            return typeFilePath(outer) + "$" + typeElement.getSimpleName();
+            return typeFilePath(outer) + "." + typeElement.getSimpleName();
         }
 
         if (typeElement.getEnclosingElement() instanceof PackageElement packageElement)
