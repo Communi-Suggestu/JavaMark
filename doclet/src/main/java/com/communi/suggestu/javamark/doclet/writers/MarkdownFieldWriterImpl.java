@@ -9,10 +9,12 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.utils.HtmlIdUtils;
 import com.communi.suggestu.javamark.doclet.content.VitepressTableContent;
-import jdk.javadoc.internal.doclets.formats.html.EnumConstantWriterImpl;
+import jdk.javadoc.internal.doclets.formats.html.FieldWriterImpl;
+import jdk.javadoc.internal.doclets.formats.html.HtmlLinkInfo;
 import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
 import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
+import jdk.javadoc.internal.doclets.formats.html.markup.Entity;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
 import jdk.javadoc.internal.doclets.formats.html.markup.Text;
 import jdk.javadoc.internal.doclets.toolkit.Content;
@@ -20,20 +22,14 @@ import jdk.javadoc.internal.doclets.toolkit.Content;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import java.util.Arrays;
+import java.util.List;
 
-public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
+public class MarkdownFieldWriterImpl extends FieldWriterImpl
 {
-    public MarkdownEnumConstantsWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
+    public MarkdownFieldWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
     {
         super(writer, typeElement);
-    }
-
-    @Override
-    public Content getMemberSummaryHeader(final TypeElement typeElement, final Content content)
-    {
-        var builder = new ContentBuilder();
-        writer.addSummaryHeader(this, builder);
-        return builder;
     }
 
     @Override
@@ -45,22 +41,43 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     @Override
     public void addSummaryLabel(final Content content)
     {
-        content.add(contents.enumConstantSummary).add(Constants.MARKDOWN_NEW_LINE);
+        content.add(contents.fieldSummaryLabel).add(Constants.MARKDOWN_NEW_LINE);
     }
 
     @Override
     protected Table<Element> createSummaryTable()
     {
+        List<HtmlStyle> bodyRowStyles = Arrays.asList(HtmlStyle.colFirst, HtmlStyle.colSecond,
+            HtmlStyle.colLast);
+
         return new MarkdownAwareTable<Element>(HtmlStyle.summaryTable)
-            .setCaption(contents.getContent("doclet.Enum_Constants"))
+            .setCaption(contents.fields)
             .setHeader(getSummaryTableHeader(typeElement))
-            .setColumnStyles(HtmlStyle.colFirst, HtmlStyle.colLast);
+            .setColumnStyles(bodyRowStyles);
     }
 
     @Override
     public Content getInheritedSummaryLinks()
     {
         return new MarkdownAwareContentBuilder();
+    }
+
+    @Override
+    public void addInheritedSummaryLabel(final TypeElement typeElement, final Content content)
+    {
+        Content classLink = writer.getPreQualifiedClassLink(
+            HtmlLinkInfo.Kind.PLAIN, typeElement);
+        Content label;
+        if (options.summarizeOverriddenMethods()) {
+            label = Text.of(utils.isClass(typeElement)
+                ? resources.getText("doclet.Fields_Declared_In_Class")
+                : resources.getText("doclet.Fields_Declared_In_Interface"));
+        } else {
+            label = Text.of(utils.isClass(typeElement)
+                ? resources.getText("doclet.Fields_Inherited_From_Class")
+                : resources.getText("doclet.Fields_Inherited_From_Interface"));
+        }
+        content.add(label).add(Entity.NO_BREAK_SPACE).add(classLink);
     }
 
     @Override
@@ -72,10 +89,10 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     }
 
     @Override
-    public Content getEnumConstantsDetailsHeader(final TypeElement typeElement, Content content)
+    public Content getFieldDetailsHeader(Content content)
     {
         content = new ContentBuilder();
-        content.add(contents.enumConstantDetailLabel).add(Constants.MARKDOWN_NEW_LINE);
+        content.add(contents.fieldDetailsLabel).add(Constants.MARKDOWN_NEW_LINE);
         return content;
     }
 
@@ -86,25 +103,25 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     }
 
     @Override
-    public Content getEnumConstantsDetails(final Content enumConstantsDetailsHeader, final Content enumConstantsDetails)
+    public Content getFieldDetails(final Content memberDetailsHeaderContent, final Content memberContent)
     {
         return new ContainerContent(
-            enumConstantsDetails,
-            enumConstantsDetailsHeader,
+            memberContent,
+            memberDetailsHeaderContent,
             ContainerContent.Type.INFO
         );
     }
 
     @Override
-    public Content getEnumConstantsHeader(final VariableElement enumConstant, final Content enumConstantsDetails)
+    public Content getFieldHeaderContent(final VariableElement field)
     {
         var body = new NoneEncodingContentBuilder();
-        var header = Text.of(name(enumConstant));
+        var header = Text.of(name(field));
         var table = new VitepressTableContent();
 
         table.addTab(header, body);
 
-        var htmlId = HtmlIdUtils.forMember(enumConstant);
+        var htmlId = HtmlIdUtils.forMember(field);
         var anchoredTable = new SectionWrappingContent(htmlId, table);
 
         return new ContentWrapper(body, anchoredTable);
@@ -115,7 +132,7 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     {
         if (!(memberContent instanceof ContentWrapper wrapper))
             return memberContent;
-
+        
         return wrapper.getWrapper();
     }
 }

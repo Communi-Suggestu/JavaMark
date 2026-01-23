@@ -7,12 +7,29 @@ import com.communi.suggestu.javamark.doclet.utils.DocTreeUtils;
 import com.communi.suggestu.javamark.doclet.utils.ElementUtils;
 import com.communi.suggestu.javamark.doclet.utils.SignatureUtils;
 import com.communi.suggestu.javamark.doclet.utils.TypeUniverse;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownAnnotationTypeMemberWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownConstructorWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownEnumConstantsWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownFieldWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownMethodWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownPropertyWriterImpl;
 import com.sun.source.doctree.DeprecatedTree;
 import com.sun.source.doctree.DocTree;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriterImpl;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
 import jdk.javadoc.internal.doclets.formats.html.HtmlDocletWriter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlOptions;
+import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
 import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.toolkit.DocletException;
+import jdk.javadoc.internal.doclets.toolkit.builders.AbstractBuilder;
+import jdk.javadoc.internal.doclets.toolkit.builders.AnnotationTypeMemberBuilder;
+import jdk.javadoc.internal.doclets.toolkit.builders.BuilderFactory;
+import jdk.javadoc.internal.doclets.toolkit.builders.ConstructorBuilder;
+import jdk.javadoc.internal.doclets.toolkit.builders.EnumConstantBuilder;
+import jdk.javadoc.internal.doclets.toolkit.builders.FieldBuilder;
+import jdk.javadoc.internal.doclets.toolkit.builders.MethodBuilder;
+import jdk.javadoc.internal.doclets.toolkit.builders.PropertyBuilder;
 import jdk.javadoc.internal.doclets.toolkit.util.ClassTree;
 import jdk.javadoc.internal.doclets.toolkit.util.CommentHelper;
 import jdk.javadoc.internal.doclets.toolkit.util.DocFile;
@@ -39,27 +56,27 @@ import java.util.stream.Collectors;
 
 public class TypeFileBuilder
 {
-    private final HtmlConfiguration configuration;
-    private final TypeUniverse      typeUniverse;
-    private final ClassTree classTree;
-    private final Types           typeUtils;
-    private final Path rootPath;
-    private final Path            path;
-    private final PackageLinkBuilder packageLinkBuilder;
-    private final TypeLinkBuilder linkBuilder;
+    private final HtmlConfiguration      configuration;
+    private final TypeUniverse           typeUniverse;
+    private final ClassTree              classTree;
+    private final Types                  typeUtils;
+    private final Path                   rootPath;
+    private final Path                   path;
+    private final PackageLinkBuilder     packageLinkBuilder;
+    private final TypeLinkBuilder        linkBuilder;
     private final TypeDisplayNameBuilder displayNameBuilder;
 
-    private final Utils utils;
+    private final Utils       utils;
     private final HtmlOptions options;
 
-    private       String          result = null;
-
+    private String result = null;
 
     public TypeFileBuilder(
         final HtmlConfiguration configuration, final TypeUniverse typeUniverse,
         final ClassTree classTree,
         final Types typeUtils, final Path path, final PackageLinkBuilder packageLinkBuilder, final TypeLinkBuilder linkBuilder,
-        final TypeDisplayNameBuilder displayNameBuilder) {
+        final TypeDisplayNameBuilder displayNameBuilder)
+    {
         this.configuration = configuration;
         this.typeUniverse = typeUniverse;
         this.typeUtils = typeUtils;
@@ -80,15 +97,17 @@ public class TypeFileBuilder
         this.classTree = classTree;
     }
 
-    public TypeFileBuilder from(TypeElement element) {
+    public TypeFileBuilder from(TypeElement element) throws DocletException
+    {
         String builder =
             "--- \n" +
-            "title: " + element.getSimpleName() + "\n" +
-            "aside: false \n" +
-            "---\n";
+                "title: " + element.getSimpleName() + "\n" +
+                "aside: false \n" +
+                "---\n";
 
         final PackageElement packageElement = ElementUtils.getEnclosingPackage(element);
-        if (packageElement != null) {
+        if (packageElement != null)
+        {
             String packageLink = packageLinkBuilder.withDisplayMode(PackageLinkBuilder.DisplayMode.FULLY_QUALIFIED_NAME).build(packageElement, packageElement);
             builder += "_Package:_ " + packageLink + Constants.MARKDOWN_NEW_LINE;
         }
@@ -98,7 +117,9 @@ public class TypeFileBuilder
             Constants.MARKDOWN_NEW_LINE;
 
         if (element.getKind() == ElementKind.CLASS)
+        {
             builder += extractSuperTypeHierarchy(element) + Constants.MARKDOWN_NEW_LINE;
+        }
 
         var typeParameters = listTypeParameters(element);
         var superInterfaces = listSuperInterfaces(element);
@@ -110,28 +131,44 @@ public class TypeFileBuilder
         var functionalInterfaces = listFunctionalInterfaceInformation(element);
 
         if (!typeParameters.isBlank())
+        {
             builder += typeParameters + "\n";
+        }
 
         if (!superInterfaces.isBlank())
+        {
             builder += superInterfaces + Constants.MARKDOWN_NEW_LINE + "\n";
+        }
 
         if (!implementingInterfaces.isBlank())
+        {
             builder += implementingInterfaces + Constants.MARKDOWN_NEW_LINE + "\n";
+        }
 
         if (!directSubtypes.isBlank())
+        {
             builder += directSubtypes + Constants.MARKDOWN_NEW_LINE + "\n";
+        }
 
         if (!directSubInterfaces.isBlank())
+        {
             builder += directSubInterfaces + Constants.MARKDOWN_NEW_LINE + "\n";
+        }
 
         if (!interfaceUsage.isBlank())
+        {
             builder += interfaceUsage + Constants.MARKDOWN_NEW_LINE + "\n";
+        }
 
         if (!enclosingClass.isBlank())
+        {
             builder += enclosingClass + Constants.MARKDOWN_NEW_LINE + "\n";
+        }
 
         if (!functionalInterfaces.isBlank())
+        {
             builder += functionalInterfaces + Constants.MARKDOWN_NEW_LINE + "\n";
+        }
 
         builder += "---\n";
 
@@ -147,11 +184,26 @@ public class TypeFileBuilder
         builder += classTags + Constants.MARKDOWN_NEW_LINE + "\n";
         builder += memberSummary + Constants.MARKDOWN_NEW_LINE + "\n";
 
+        var enumMemberDetails = listEnumConstantsDetails(element);
+        var propertyMemberDetails = listPropertyDetails(element);
+        var fieldMemberDetails = listFieldDetails(element);
+        var constructorMemberDetails = listConstructorDetails(element);
+        var annotationTypeMemberDetails = listAnnotationMemberDetails(element);
+        var methodDetails = listMethodMemberDetails(element);
+
+        builder += enumMemberDetails + Constants.MARKDOWN_NEW_LINE + "\n";
+        builder += propertyMemberDetails + Constants.MARKDOWN_NEW_LINE + "\n";
+        builder += fieldMemberDetails + Constants.MARKDOWN_NEW_LINE + "\n";
+        builder += constructorMemberDetails + Constants.MARKDOWN_NEW_LINE + "\n";
+        builder += annotationTypeMemberDetails + Constants.MARKDOWN_NEW_LINE + "\n";
+        builder += methodDetails + Constants.MARKDOWN_NEW_LINE + "\n";
+
         result = builder;
         return this;
     }
 
-    private String extractSuperTypeHierarchy(TypeElement element) {
+    private String extractSuperTypeHierarchy(TypeElement element)
+    {
         var superTypes = typeUniverse.getSuperTypeHierarchy(element.asType());
         StringBuilder superTypeHierarchyString = new StringBuilder();
         for (int superTypeIndex = 0; superTypeIndex < superTypes.size(); superTypeIndex++)
@@ -171,11 +223,14 @@ public class TypeFileBuilder
         return superTypeHierarchyString.toString();
     }
 
-    private String listTypeParameters(TypeElement element) {
+    private String listTypeParameters(TypeElement element)
+    {
 
         var paramTrees = typeUniverse.getTypeParamTrees(element);
         if (paramTrees.isEmpty())
+        {
             return "";
+        }
 
         var result = new StringBuilder();
         var indexMap = typeUniverse.mapNameToPosition(element.getTypeParameters());
@@ -183,7 +238,9 @@ public class TypeFileBuilder
         paramTrees.forEach(tree -> {
             var name = tree.getName().getName().toString();
             if (!indexMap.containsKey(name))
+            {
                 return;
+            }
 
             var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
             var description = DocTreeUtils.getTags(tree, configuration);
@@ -195,15 +252,20 @@ public class TypeFileBuilder
         return result.toString();
     }
 
-    private String listSuperInterfaces(TypeElement element) {
+    private String listSuperInterfaces(TypeElement element)
+    {
         if (!configuration.utils.isInterface(element))
+        {
             return "";
+        }
 
         SortedSet<TypeMirror> interfaces = new TreeSet<>(configuration.utils.comparators.makeTypeMirrorClassUseComparator());
         interfaces.addAll(configuration.utils.getAllInterfaces(element));
 
         if (interfaces.isEmpty())
+        {
             return "";
+        }
 
         return "**All Extended Interfaces:**" + Constants.MARKDOWN_NEW_LINE +
             interfaces.stream()
@@ -211,9 +273,12 @@ public class TypeFileBuilder
                 .collect(Collectors.joining(", "));
     }
 
-    private String listImplementedInterfaces(TypeElement element) {
+    private String listImplementedInterfaces(TypeElement element)
+    {
         if (!typeUniverse.isClass(element))
+        {
             return "";
+        }
 
         var interfaces = typeUtils.directSupertypes(element.asType())
             .stream()
@@ -221,7 +286,9 @@ public class TypeFileBuilder
             .toList();
 
         if (interfaces.isEmpty())
+        {
             return "";
+        }
 
         return "**All Implemented Interfaces:**" + Constants.MARKDOWN_NEW_LINE +
             interfaces.stream()
@@ -229,13 +296,18 @@ public class TypeFileBuilder
                 .collect(Collectors.joining(", "));
     }
 
-    private String listDirectKnownSubTypes(TypeElement element) {
+    private String listDirectKnownSubTypes(TypeElement element)
+    {
         if (!configuration.utils.isClass(element))
+        {
             return "";
+        }
 
         var directSubTypes = typeUniverse.getDirectSubTypes(element);
         if (directSubTypes == null || directSubTypes.isEmpty())
+        {
             return "";
+        }
 
         return "**Direct Known Subclasses:**" + Constants.MARKDOWN_NEW_LINE +
             directSubTypes.stream()
@@ -243,13 +315,18 @@ public class TypeFileBuilder
                 .collect(Collectors.joining(", "));
     }
 
-    private String listDirectKnownSubInterfaces(TypeElement element) {
+    private String listDirectKnownSubInterfaces(TypeElement element)
+    {
         if (!configuration.utils.isInterface(element))
+        {
             return "";
+        }
 
         var directSubTypes = typeUniverse.getDirectSubTypes(element);
         if (directSubTypes == null || directSubTypes.isEmpty())
+        {
             return "";
+        }
 
         return "**Direct Known Subinterfaces:**" + Constants.MARKDOWN_NEW_LINE +
             directSubTypes.stream()
@@ -258,13 +335,18 @@ public class TypeFileBuilder
                 .collect(Collectors.joining(", "));
     }
 
-    private String listDirectKnownImplementers(TypeElement element) {
+    private String listDirectKnownImplementers(TypeElement element)
+    {
         if (!configuration.utils.isInterface(element))
+        {
             return "";
+        }
 
         var directSubTypes = typeUniverse.getDirectSubTypes(element);
         if (directSubTypes == null || directSubTypes.isEmpty())
+        {
             return "";
+        }
 
         return "**Direct Known Subinterfaces:**" + Constants.MARKDOWN_NEW_LINE +
             directSubTypes.stream()
@@ -273,23 +355,30 @@ public class TypeFileBuilder
                 .collect(Collectors.joining(", "));
     }
 
-    private String listEnclosingClass(TypeElement element) {
+    private String listEnclosingClass(TypeElement element)
+    {
         if (!(element.getEnclosingElement() instanceof TypeElement enclosingType))
+        {
             return "";
+        }
 
         return "**Enclosing Class:**" + Constants.MARKDOWN_NEW_LINE +
             linkBuilder.withDisplayMode(TypeDisplayNameBuilder.DisplayMode.JAVADOC).build(element, enclosingType);
     }
 
-    private String listFunctionalInterfaceInformation(TypeElement element) {
+    private String listFunctionalInterfaceInformation(TypeElement element)
+    {
         if (!isFunctionalInterface(element))
+        {
             return "";
+        }
 
         return "**Functional Interface:**" + Constants.MARKDOWN_NEW_LINE +
             "This is a functional interface and can therefore be used as the assignment target for a lambda expression or method reference.";
     }
 
-    private String listClassSignature(TypeElement element) {
+    private String listClassSignature(TypeElement element)
+    {
         var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
         var content = SignatureUtils.createTypeSignatureAndToContent(element, htmlWriter);
         var builder = new MarkdownAwareContentBuilder();
@@ -297,30 +386,36 @@ public class TypeFileBuilder
         return builder.toString();
     }
 
-    private boolean isFunctionalInterface(TypeElement typeElement) {
+    private boolean isFunctionalInterface(TypeElement typeElement)
+    {
         List<? extends AnnotationMirror> annotationMirrors = typeElement.getAnnotationMirrors();
-        for (AnnotationMirror anno : annotationMirrors) {
-            if (configuration.utils.isFunctionalInterface(anno)) {
+        for (AnnotationMirror anno : annotationMirrors)
+        {
+            if (configuration.utils.isFunctionalInterface(anno))
+            {
                 return true;
             }
         }
         return false;
     }
 
-    private String listDeprecationInformation(TypeElement typeElement) {
+    private String listDeprecationInformation(TypeElement typeElement)
+    {
         List<? extends DeprecatedTree> deprs = utils.getDeprecatedTrees(typeElement);
-        if (utils.isDeprecated(typeElement)) {
+        if (utils.isDeprecated(typeElement))
+        {
             var forRemoval = utils.isDeprecatedForRemoval(typeElement);
             var containerType = forRemoval ? "danger" : "warning";
 
             var builder = new StringBuilder();
-            builder.append("::: ").append(containerType).append("\n");
+            builder.append("::: ").append(containerType).append(" ");
             builder.append(getDeprecatedPhrase(typeElement, forRemoval)).append(Constants.MARKDOWN_NEW_LINE);
 
             CommentHelper ch = utils.getCommentHelper(typeElement);
             DocTree dt = deprs.getFirst();
             List<? extends DocTree> commentTags = ch.getBody(dt);
-            if (!commentTags.isEmpty()) {
+            if (!commentTags.isEmpty())
+            {
                 var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
                 var target = new MarkdownAwareContentBuilder();
                 htmlWriter.addInlineDeprecatedComment(
@@ -339,18 +434,22 @@ public class TypeFileBuilder
         return "";
     }
 
-    private String getDeprecatedPhrase(Element e, boolean forRemoval) {
+    private String getDeprecatedPhrase(Element e, boolean forRemoval)
+    {
         return forRemoval
             ? "**Deprecated, for removal: This API element is subject to removal in a future version.**"
             : "**Deprecated.**";
     }
 
-    private String listClassDescription(TypeElement typeElement) {
-        if (!options.noComment()) {
+    private String listClassDescription(TypeElement typeElement)
+    {
+        if (!options.noComment())
+        {
             // generate documentation for the class.
-            if (!utils.getFullBody(typeElement).isEmpty()) {
+            if (!utils.getFullBody(typeElement).isEmpty())
+            {
                 var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
-                var target = new MarkdownAwareContentBuilder();
+                var target = new NoneEncodingContentBuilder();
                 htmlWriter.addInlineComment(typeElement, target);
                 return target.toString();
             }
@@ -359,10 +458,13 @@ public class TypeFileBuilder
         return "";
     }
 
-    private String listClassTags(TypeElement typeElement) {
-        if (!options.noComment()) {
+    private String listClassTags(TypeElement typeElement)
+    {
+        if (!options.noComment())
+        {
             //Custom inner class which gives access to the underlying addTagsInfo method.
-            var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString())) {
+            var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()))
+            {
                 @Override
                 public void addTagsInfo(final Element e, final Content content)
                 {
@@ -377,7 +479,8 @@ public class TypeFileBuilder
         return "";
     }
 
-    public String listMemberSummary(TypeElement element) {
+    public String listMemberSummary(TypeElement element)
+    {
         var content = new NoneEncodingContentBuilder();
         var memberBuilder = new MemberSummaryBuilder(
             configuration,
@@ -388,14 +491,97 @@ public class TypeFileBuilder
         return content.toString();
     }
 
+    public String listEnumConstantsDetails(TypeElement element) throws DocletException
+    {
+        var context = getContext();
+        var classWriter = new ClassWriterImpl(configuration, element, classTree);
+        var builder = EnumConstantBuilder.getInstance(context, element, new MarkdownEnumConstantsWriterImpl(classWriter, element));
+
+        var content = new ContentBuilder();
+        builder.build(content);
+        return content.toString();
+    }
+
+    public String listPropertyDetails(TypeElement element) throws DocletException
+    {
+        var context = getContext();
+        var classWriter = new ClassWriterImpl(configuration, element, classTree);
+        var builder = PropertyBuilder.getInstance(context, element, new MarkdownPropertyWriterImpl(classWriter, element));
+
+        var content = new ContentBuilder();
+        builder.build(content);
+        return content.toString();
+    }
+
+    public String listFieldDetails(TypeElement element) throws DocletException
+    {
+        var context = getContext();
+        var classWriter = new ClassWriterImpl(configuration, element, classTree);
+        var builder = FieldBuilder.getInstance(context, element, new MarkdownFieldWriterImpl(classWriter, element));
+
+        var content = new ContentBuilder();
+        builder.build(content);
+        return content.toString();
+    }
+
+    public String listConstructorDetails(TypeElement element) throws DocletException
+    {
+        var context = getContext();
+        var classWriter = new ClassWriterImpl(configuration, element, classTree);
+        var builder = ConstructorBuilder.getInstance(context, element, new MarkdownConstructorWriterImpl(classWriter, element));
+
+        var content = new ContentBuilder();
+        builder.build(content);
+        return content.toString();
+    }
+
+    public String listAnnotationMemberDetails(TypeElement element) throws DocletException
+    {
+        var context = getContext();
+        var classWriter = new ClassWriterImpl(configuration, element, classTree);
+        var builder = AnnotationTypeMemberBuilder.getInstance(context, element, new MarkdownAnnotationTypeMemberWriterImpl(classWriter, element,
+            MarkdownAnnotationTypeMemberWriterImpl.Kind.ANY));
+
+        var content = new ContentBuilder();
+        builder.build(content);
+        return content.toString();
+    }
+
+    public String listMethodMemberDetails(TypeElement element) throws DocletException
+    {
+        var context = getContext();
+        var classWriter = new ClassWriterImpl(configuration, element, classTree);
+        var builder = MethodBuilder.getInstance(context, element, new MarkdownMethodWriterImpl(classWriter, element));
+
+        var content = new ContentBuilder();
+        builder.build(content);
+        return content.toString();
+    }
+
     public void build() throws IOException
     {
         if (result == null)
+        {
             return;
+        }
 
         var path = this.rootPath.resolve(this.path);
 
         Files.createDirectories(path.getParent());
         Files.writeString(path, result);
+    }
+
+    private AbstractBuilder.Context getContext()
+    {
+        try
+        {
+            var field = BuilderFactory.class.getDeclaredField("context");
+            field.setAccessible(true);
+            return (AbstractBuilder.Context) field.get(configuration.getBuilderFactory());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }

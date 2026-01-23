@@ -54,7 +54,9 @@ public class VitepressTabbedEnvironmentBuilder {
         }
         out.append("\n");
         for (Map.Entry<String, StringBuilder> entry : tabs.entrySet()) {
-            out.append("== ").append(entry.getKey()).append("\n");
+            out.append("== ")
+                .append(entry.getKey())
+                .append("\n");
             out.append(entry.getValue());
             if (!entry.getValue().toString().endsWith("\n")) {
                 out.append("\n");

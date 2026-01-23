@@ -28,7 +28,7 @@ java {
 
 tableau {
     project {
-        group = "com.communi-suggestu"
+        group = "com.communi-suggestu.javamark"
         publisher = "communi-suggestu"
         versioning {
             version = environmentVariable("VERSION")
@@ -37,8 +37,7 @@ tableau {
         }
     }
     maven {
-        disableDefaultPublication()
-        publishToLDTTeamMaven('communi-suggestu-placitum')
+        publishToLDTTeamMaven('communi-suggestu-javamark')
         publishLocally()
         pom({
             usingMitLicense()
@@ -52,7 +51,7 @@ gradlePlugin {
     plugins {
         greeting {
             id = 'com.communi-suggestu.javamark'
-            implementationClass = 'com.communi-suggestu.javamark.gradle.JavaMarkPlugin'
+            implementationClass = 'com.communi.suggestu.javamark.gradle.JavaMarkPlugin'
         }
     }
 }

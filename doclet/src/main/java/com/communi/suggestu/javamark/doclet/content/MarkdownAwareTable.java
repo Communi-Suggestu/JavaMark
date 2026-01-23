@@ -3,15 +3,12 @@ package com.communi.suggestu.javamark.doclet.content;
 import com.communi.suggestu.javamark.doclet.builders.HtmlTableBuilder;
 import com.communi.suggestu.javamark.doclet.builders.VitepressTabbedEnvironmentBuilder;
 import com.communi.suggestu.javamark.doclet.utils.TableHeaderUtils;
-import jdk.javadoc.internal.doclets.formats.html.HtmlIds;
 import jdk.javadoc.internal.doclets.formats.html.Table;
 import jdk.javadoc.internal.doclets.formats.html.TableHeader;
 import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlAttr;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlId;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlTree;
-import jdk.javadoc.internal.doclets.formats.html.markup.TagName;
 import jdk.javadoc.internal.doclets.toolkit.Content;
 
 import java.io.IOException;
@@ -19,6 +16,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -33,7 +31,6 @@ public class MarkdownAwareTable<T> extends Table<T>
     public MarkdownAwareTable(final HtmlStyle tableStyle)
     {
         super(tableStyle);
-        this.tableStyle = tableStyle;
         this.bodyRows = new ArrayList<>();
     }
 
@@ -43,8 +40,14 @@ public class MarkdownAwareTable<T> extends Table<T>
     record MarkdownTab<T>(
         Content label,
         Predicate<T> predicate,
-        List<List<Content>> rows,
-        int index) {}
+        List<List<Content>> rows)
+    {
+
+        private MarkdownTab(final Content label, final Predicate<T> predicate)
+        {
+            this(label, predicate, new ArrayList<>());
+        }
+    }
 
     @Override
     public boolean write(Writer out, String newline, boolean atNewline) throws IOException
@@ -52,7 +55,6 @@ public class MarkdownAwareTable<T> extends Table<T>
         return toContent().write(out, newline, atNewline);
     }
 
-    private final HtmlStyle            tableStyle;
     private       Content              caption;
     private       List<MarkdownTab<T>> tabs;
     private       Set<MarkdownTab<T>>  occurringTabs;
@@ -60,7 +62,8 @@ public class MarkdownAwareTable<T> extends Table<T>
     private       boolean              renderTabs           = true;
     private       int                  columnCount          = -1;
     private       TableHeader          header;
-    private final List<List<Content>>        bodyRows;
+    private final List<List<Content>>  bodyRows;
+    private final Set<List<Content>>   allRows              = new LinkedHashSet<>();
     private       HtmlId               id;
     private       boolean              alwaysShowDefaultTab = false;
 
@@ -82,7 +85,7 @@ public class MarkdownAwareTable<T> extends Table<T>
      */
     public Table<T> setCaption(Content captionContent)
     {
-        caption = getCaption(captionContent);
+        caption = captionContent;
         return this;
     }
 
@@ -105,7 +108,7 @@ public class MarkdownAwareTable<T> extends Table<T>
         }
         // Use current size of tabs list as id so we have tab ids that are consistent
         // across tables with the same tabs but different content.
-        tabs.add(new MarkdownTab<>(label, predicate, new ArrayList<>(), tabs.size() + 1));
+        tabs.add(new MarkdownTab<>(label, predicate));
         return this;
     }
 
@@ -299,21 +302,30 @@ public class MarkdownAwareTable<T> extends Table<T>
             throw new IllegalArgumentException("row content size does not match number of columns");
         }
 
-        if (tabs != null) {
-            for (var tab : tabs) {
-                if (tab.predicate().test(item)) {
+
+        if (tabs != null)
+        {
+            for (var tab : tabs)
+            {
+                if (tab.predicate().test(item))
+                {
                     occurringTabs.add(tab);
                     tab.rows.add(contents);
+                    allRows.add(contents);
                 }
             }
-        } else {
+        }
+        else
+        {
             bodyRows.add(contents);
+            allRows.add(contents);
         }
     }
 
-    private HtmlTree getCaption(Content title)
+    @Override
+    public boolean isEmpty()
     {
-        return HtmlTree.DIV(HtmlStyle.caption, HtmlTree.SPAN(title));
+        return allRows.isEmpty();
     }
 
     private Content toContent()
@@ -323,33 +335,56 @@ public class MarkdownAwareTable<T> extends Table<T>
         {
             if (tabs == null)
             {
-                main.add(caption);
+                defaultTab = caption;
             }
             else
             {
-                main.add(getCaption(occurringTabs.iterator().next().label()));
+                defaultTab = occurringTabs.iterator().next().label();
             }
-
-            main.add(new NoneEncodingContentBuilder().add(createTable(this.bodyRows)));
         }
-        else
+
+        var tabs = new VitepressTabbedEnvironmentBuilder();
+
+        if (this.id != null)
         {
-            var tabs = new VitepressTabbedEnvironmentBuilder();
+            tabs = tabs.withKey(this.id.name());
+        }
 
-            if (this.id != null)
-                tabs = tabs.withKey(this.id.name());
+        if (this.defaultTab != null)
+        {
+            var defaultMarkdownTab = new MarkdownTab<T>(
+                defaultTab,
+                t -> true,
+                new ArrayList<>(allRows)
+            );
 
+            processTab(defaultMarkdownTab, tabs);
+        }
+
+        if (this.tabs != null)
+        {
             for (final MarkdownTab<T> tab : this.tabs)
             {
-                tabs.addTab(
-                    tab.label().toString(),
-                    createTable(tab.rows())
-                );
+                processTab(tab, tabs);
             }
-
-            main.add(new NoneEncodingContentBuilder().add(tabs.build()));
         }
+
+        main.add(new NoneEncodingContentBuilder().add(tabs.build()));
+
         return main;
+    }
+
+    private void processTab(final MarkdownTab<T> tab, final VitepressTabbedEnvironmentBuilder tabs)
+    {
+        if (tab.rows.isEmpty())
+        {
+            return;
+        }
+
+        tabs.addTab(
+            tab.label().toString(),
+            createTable(tab.rows())
+        );
     }
 
     private String createTable(List<List<Content>> bodyRows)

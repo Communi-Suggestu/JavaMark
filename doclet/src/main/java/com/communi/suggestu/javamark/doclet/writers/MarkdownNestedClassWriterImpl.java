@@ -9,6 +9,7 @@ import jdk.javadoc.internal.doclets.formats.html.NestedClassWriterImpl;
 import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
 import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
+import jdk.javadoc.internal.doclets.formats.html.markup.Entity;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
 import jdk.javadoc.internal.doclets.formats.html.markup.Text;
 import jdk.javadoc.internal.doclets.toolkit.Content;
@@ -56,7 +57,7 @@ public class MarkdownNestedClassWriterImpl extends NestedClassWriterImpl
     @Override
     public void addSummaryLabel(final Content content)
     {
-        content.add("### ").add(contents.nestedClassSummary).add(Constants.MARKDOWN_NEW_LINE);
+        content.add(contents.nestedClassSummary).add(Constants.MARKDOWN_NEW_LINE);
     }
 
     @Override
@@ -73,8 +74,7 @@ public class MarkdownNestedClassWriterImpl extends NestedClassWriterImpl
                 ? resources.getText("doclet.Nested_Classes_Interfaces_Inherited_From_Interface")
                 : resources.getText("doclet.Nested_Classes_Interfaces_Inherited_From_Class"));
         }
-
-        content.add("#### ").add(label).add(" - ").add(classLink).add(Constants.MARKDOWN_NEW_LINE);
+        content.add(label).add(Entity.NO_BREAK_SPACE).add(classLink);
     }
 
     @Override

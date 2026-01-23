@@ -1,12 +1,19 @@
 package com.communi.suggestu.javamark.doclet.builders;
 
 import com.communi.suggestu.javamark.doclet.utils.Constants;
+import com.communi.suggestu.javamark.doclet.content.ContainerContent;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownAnnotationTypeMemberWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownConstructorWriterImpl;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownEnumConstantsWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownFieldWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownMethodWriterImpl;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownNestedClassWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownPropertyWriterImpl;
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import jdk.javadoc.internal.doclets.formats.html.ClassWriterImpl;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
+import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
 import jdk.javadoc.internal.doclets.toolkit.BaseConfiguration;
 import jdk.javadoc.internal.doclets.toolkit.Content;
 import jdk.javadoc.internal.doclets.toolkit.MemberSummaryWriter;
@@ -61,15 +68,25 @@ public class MemberSummaryBuilder extends AbstractMemberBuilder
         memberSummaryWriters = new EnumMap<>(VisibleMemberTable.Kind.class);
         comparator = utils.comparators.makeIndexElementComparator();
 
+        var visibleMemberTable = getVisibleMemberTable();
         var classWriter = new ClassWriterImpl(configuration, typeElement, classTree);
         for (VisibleMemberTable.Kind kind : VisibleMemberTable.Kind.values())
         {
+            if (!visibleMemberTable.hasVisibleMembers(kind))
+                continue;
+
             memberSummaryWriters.put(
                 kind,
                 switch (kind) {
                     case NESTED_CLASSES -> new MarkdownNestedClassWriterImpl(classWriter, typeElement);
                     case ENUM_CONSTANTS -> new MarkdownEnumConstantsWriterImpl(classWriter, typeElement);
-                    default -> null;
+                    case FIELDS -> new MarkdownFieldWriterImpl(classWriter, typeElement);
+                    case CONSTRUCTORS -> new MarkdownConstructorWriterImpl(classWriter, typeElement);
+                    case METHODS -> new MarkdownMethodWriterImpl(classWriter, typeElement);
+                    case ANNOTATION_TYPE_MEMBER -> new MarkdownAnnotationTypeMemberWriterImpl(classWriter, typeElement, MarkdownAnnotationTypeMemberWriterImpl.Kind.ANY);
+                    case ANNOTATION_TYPE_MEMBER_REQUIRED -> new MarkdownAnnotationTypeMemberWriterImpl(classWriter, typeElement, MarkdownAnnotationTypeMemberWriterImpl.Kind.REQUIRED);
+                    case ANNOTATION_TYPE_MEMBER_OPTIONAL -> new MarkdownAnnotationTypeMemberWriterImpl(classWriter, typeElement, MarkdownAnnotationTypeMemberWriterImpl.Kind.OPTIONAL);
+                    case PROPERTIES -> new MarkdownPropertyWriterImpl(classWriter, typeElement);
                 }
             );
         }
@@ -221,9 +238,17 @@ public class MemberSummaryBuilder extends AbstractMemberBuilder
         }
         if (!summaryTreeList.isEmpty())
         {
-            Content member = writer.getMemberSummaryHeader(typeElement, summariesList);
-            summaryTreeList.forEach(member::add);
-            writer.addSummary(summariesList, member);
+            Content header = writer.getMemberSummaryHeader(typeElement, summariesList);
+
+            var content = new ContentBuilder();
+            summaryTreeList.forEach(content::add);
+
+            var container = new ContainerContent(
+                content,
+                header,
+                ContainerContent.Type.INFO
+            );
+            writer.addSummary(summariesList, container);
             summariesList.add(Constants.MARKDOWN_NEW_LINE).add(Constants.MARKDOWN_NEW_LINE);
         }
     }
@@ -265,11 +290,19 @@ public class MemberSummaryBuilder extends AbstractMemberBuilder
             {
                 SortedSet<Element> inheritedMembers = new TreeSet<>(comparator);
                 inheritedMembers.addAll(members);
+
                 Content inheritedHeader = writer.getInheritedSummaryHeader(inheritedClass);
+
                 Content links = writer.getInheritedSummaryLinks();
                 addSummaryFootNote(inheritedClass, inheritedMembers, links, writer);
-                inheritedHeader.add(links);
-                targets.add(inheritedHeader);
+
+                var container = new ContainerContent(
+                    links,
+                    inheritedHeader,
+                    ContainerContent.Type.TIP
+                );
+
+                targets.add(container);
             }
         }
     }
@@ -314,11 +347,15 @@ public class MemberSummaryBuilder extends AbstractMemberBuilder
                 if (utils.isMethod(member))
                 {
                     var docFinder = utils.docFinder();
-                    Optional<List<? extends DocTree>> r = docFinder.search((ExecutableElement) member, (m -> {
-                        var firstSentenceTrees = utils.getFirstSentenceTrees(m);
-                        Optional<List<? extends DocTree>> optional = firstSentenceTrees.isEmpty() ? Optional.empty() : Optional.of(firstSentenceTrees);
-                        return DocFinder.Result.fromOptional(optional);
-                    })).toOptional();
+                    Optional<List<? extends DocTree>> r = Optional.empty();
+                    if (member instanceof ExecutableElement)
+                    {
+                        r = docFinder.search((ExecutableElement) member, (m -> {
+                            var firstSentenceTrees = utils.getFirstSentenceTrees(m);
+                            Optional<List<? extends DocTree>> optional = firstSentenceTrees.isEmpty() ? Optional.empty() : Optional.of(firstSentenceTrees);
+                            return DocFinder.Result.fromOptional(optional);
+                        })).toOptional();
+                    }
                     // The fact that we use `member` for possibly unrelated tags is suspicious
                     writer.addMemberSummary(typeElement, member, r.orElse(List.of()));
                 }

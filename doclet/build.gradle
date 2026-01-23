@@ -19,7 +19,7 @@ repositories {
 
 tableau {
     project {
-        group = "com.communi-suggestu"
+        group = "com.communi-suggestu.javamark"
         publisher = "communi-suggestu"
         versioning {
             version = environmentVariable("VERSION")
@@ -28,8 +28,7 @@ tableau {
         }
     }
     maven {
-        disableDefaultPublication()
-        publishToLDTTeamMaven('communi-suggestu-placitum')
+        publishToLDTTeamMaven('communi-suggestu-javamark')
         publishLocally()
         pom({
             usingMitLicense()
@@ -66,15 +65,15 @@ tasks.withType(Test).configureEach {
 
     maxHeapSize = '1G'
     jvmArgs(
-            "--add-exports=jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED",
-            "--add-exports=jdk.javadoc/jdk.javadoc.internal.doclets.formats.html=ALL-UNNAMED",
-            "--add-exports=jdk.javadoc/jdk.javadoc.internal.doclets.formats.html.markup=ALL-UNNAMED",
-            "--add-exports=jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.util=ALL-UNNAMED",
-            "--add-exports=jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.taglets=ALL-UNNAMED",
-            "--add-exports=jdk.javadoc/jdk.javadoc.internal.doclets.toolkit=ALL-UNNAMED",
-            "--add-opens=jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED",
-            "--add-opens=jdk.javadoc/jdk.javadoc.internal.doclets.formats.html=ALL-UNNAMED",
-            "--add-opens=jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.builders=ALL-UNNAMED"
+            "--add-exports", "jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED",
+            "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html=ALL-UNNAMED",
+            "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html.markup=ALL-UNNAMED",
+            "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.util=ALL-UNNAMED",
+            "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.taglets=ALL-UNNAMED",
+            "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit=ALL-UNNAMED",
+            "--add-opens", "jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED",
+            "--add-opens", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html=ALL-UNNAMED",
+            "--add-opens", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.builders=ALL-UNNAMED"
     )
 
     testLogging {

@@ -1,5 +1,6 @@
 package com.communi.suggestu.javamark.doclet;
 
+import com.communi.suggestu.javamark.doclet.builders.ConstantsFileBuilder;
 import com.communi.suggestu.javamark.doclet.builders.PackageFileBuilder;
 import com.communi.suggestu.javamark.doclet.builders.PackageLinkBuilder;
 import com.communi.suggestu.javamark.doclet.builders.TypeDisplayNameBuilder;
@@ -14,9 +15,11 @@ import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
 import jdk.javadoc.internal.doclets.formats.html.HtmlDoclet;
+import jdk.javadoc.internal.doclets.toolkit.DocletException;
 import jdk.javadoc.internal.doclets.toolkit.util.ClassTree;
 import jdk.javadoc.internal.doclets.toolkit.util.DocFile;
 import jdk.javadoc.internal.doclets.toolkit.util.DocPath;
+import jdk.javadoc.internal.doclets.toolkit.util.DocPaths;
 import org.apache.commons.io.FileUtils;
 
 import javax.lang.model.SourceVersion;
@@ -117,6 +120,8 @@ public class JavaMarkDoclet implements Doclet
                     processType(environment, typeUniverse, classTree, typeElement, typeLinkBuilder, packageLinkBuilder, displayNameBuilder);
                 }
             }
+
+            processConstants();
         }
         catch (Exception exception)
         {
@@ -147,10 +152,11 @@ public class JavaMarkDoclet implements Doclet
             .build();
     }
 
-    private void processType(DocletEnvironment environment, final TypeUniverse typeUniverse,
+    private void processType(
+        DocletEnvironment environment, final TypeUniverse typeUniverse,
         final ClassTree classTree,
         TypeElement typeElement, TypeLinkBuilder typeLinkBuilder, PackageLinkBuilder packageLinkBuilder,
-        final TypeDisplayNameBuilder displayNameBuilder) throws IOException
+        final TypeDisplayNameBuilder displayNameBuilder) throws IOException, DocletException
     {
         DocFile target = DocFile.createFileForOutput(
             getConfiguration(),
@@ -167,6 +173,18 @@ public class JavaMarkDoclet implements Doclet
             displayNameBuilder)
             .from(typeElement)
             .build();
+    }
+
+    private void processConstants() throws IOException, DocletException
+    {
+        DocFile target = DocFile.createFileForOutput(
+            getConfiguration(),
+            DocPath.create("constant-values.md")
+        );
+        new ConstantsFileBuilder(
+            getConfiguration(),
+            Path.of(target.getPath())
+        ).build();
     }
 
     private String packageFilePath(PackageElement packageElement)

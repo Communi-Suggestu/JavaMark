@@ -9,31 +9,39 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.utils.HtmlIdUtils;
 import com.communi.suggestu.javamark.doclet.content.VitepressTableContent;
-import jdk.javadoc.internal.doclets.formats.html.EnumConstantWriterImpl;
+import jdk.javadoc.internal.doclets.formats.html.ConstructorWriterImpl;
 import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
 import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
 import jdk.javadoc.internal.doclets.formats.html.markup.Text;
 import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.toolkit.util.VisibleMemberTable;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import java.util.Arrays;
+import java.util.List;
 
-public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
+import static jdk.javadoc.internal.doclets.toolkit.util.VisibleMemberTable.Kind.CONSTRUCTORS;
+
+public class MarkdownConstructorWriterImpl extends ConstructorWriterImpl
 {
-    public MarkdownEnumConstantsWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
+    private boolean foundNonPubConstructor = false;
+
+    public MarkdownConstructorWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
     {
         super(writer, typeElement);
-    }
 
-    @Override
-    public Content getMemberSummaryHeader(final TypeElement typeElement, final Content content)
-    {
-        var builder = new ContentBuilder();
-        writer.addSummaryHeader(this, builder);
-        return builder;
+        VisibleMemberTable vmt = configuration.getVisibleMemberTable(typeElement);
+        List<? extends Element> constructors = vmt.getVisibleMembers(CONSTRUCTORS);
+
+        for (Element constructor : constructors) {
+            if (utils.isProtected(constructor) || utils.isPrivate(constructor)) {
+                setFoundNonPubConstructor(true);
+            }
+        }
     }
 
     @Override
@@ -45,16 +53,33 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     @Override
     public void addSummaryLabel(final Content content)
     {
-        content.add(contents.enumConstantSummary).add(Constants.MARKDOWN_NEW_LINE);
+        content.add(contents.constructorSummaryLabel).add(Constants.MARKDOWN_NEW_LINE);
+    }
+
+    @Override
+    public void setFoundNonPubConstructor(final boolean foundNonPubConstructor)
+    {
+        super.setFoundNonPubConstructor(foundNonPubConstructor);
+        this.foundNonPubConstructor = foundNonPubConstructor;
     }
 
     @Override
     protected Table<Element> createSummaryTable()
     {
-        return new MarkdownAwareTable<Element>(HtmlStyle.summaryTable)
-            .setCaption(contents.getContent("doclet.Enum_Constants"))
+        List<HtmlStyle> bodyRowStyles;
+
+        if (foundNonPubConstructor) {
+            bodyRowStyles = Arrays.asList(HtmlStyle.colFirst, HtmlStyle.colConstructorName,
+                HtmlStyle.colLast);
+        } else {
+            bodyRowStyles = Arrays.asList(HtmlStyle.colConstructorName, HtmlStyle.colLast);
+        }
+
+        return new MarkdownAwareTable<Element>(
+            HtmlStyle.summaryTable)
+            .setCaption(contents.constructors)
             .setHeader(getSummaryTableHeader(typeElement))
-            .setColumnStyles(HtmlStyle.colFirst, HtmlStyle.colLast);
+            .setColumnStyles(bodyRowStyles);
     }
 
     @Override
@@ -62,6 +87,7 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     {
         return new MarkdownAwareContentBuilder();
     }
+
 
     @Override
     public Content getInheritedSummaryHeader(final TypeElement tElement)
@@ -72,10 +98,10 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     }
 
     @Override
-    public Content getEnumConstantsDetailsHeader(final TypeElement typeElement, Content content)
+    public Content getConstructorDetailsHeader(Content content)
     {
         content = new ContentBuilder();
-        content.add(contents.enumConstantDetailLabel).add(Constants.MARKDOWN_NEW_LINE);
+        content.add(contents.constructorDetailsLabel).add(Constants.MARKDOWN_NEW_LINE);
         return content;
     }
 
@@ -86,25 +112,25 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     }
 
     @Override
-    public Content getEnumConstantsDetails(final Content enumConstantsDetailsHeader, final Content enumConstantsDetails)
+    public Content getConstructorDetails(final Content ConstructorDetailsHeader, final Content ConstructorDetails)
     {
         return new ContainerContent(
-            enumConstantsDetails,
-            enumConstantsDetailsHeader,
+            ConstructorDetails,
+            ConstructorDetailsHeader,
             ContainerContent.Type.INFO
         );
     }
 
     @Override
-    public Content getEnumConstantsHeader(final VariableElement enumConstant, final Content enumConstantsDetails)
+    public Content getConstructorHeaderContent(final ExecutableElement member)
     {
         var body = new NoneEncodingContentBuilder();
-        var header = Text.of(name(enumConstant));
+        var header = Text.of(name(member));
         var table = new VitepressTableContent();
 
         table.addTab(header, body);
 
-        var htmlId = HtmlIdUtils.forMember(enumConstant);
+        var htmlId = HtmlIdUtils.forMember(utils, member);
         var anchoredTable = new SectionWrappingContent(htmlId, table);
 
         return new ContentWrapper(body, anchoredTable);
