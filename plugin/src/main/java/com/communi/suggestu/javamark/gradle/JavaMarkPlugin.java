@@ -2,8 +2,14 @@ package com.communi.suggestu.javamark.gradle;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.internal.tasks.JvmConstants;
+import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.StandardJavadocDocletOptions;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +41,12 @@ public class JavaMarkPlugin implements Plugin<Project>
         var version = target.getProviders().gradleProperty("javaMarkVersion").orElse("latest.release");
         var configuration = target.getConfigurations().register(CONFIGURATION_NAME);
         target.getDependencies().addProvider(CONFIGURATION_NAME, version.map(v -> "com.communi-suggestu.javamark:doclet:" + v));
-        target.getTasks().register("generateMarkdownDocs", JavaMarkTask.class, task -> {
+
+        var javaPluginExtension = target.getExtensions().getByType(JavaPluginExtension.class);
+        var sourceSet = target.getExtensions().getByType(SourceSetContainer.class)
+                .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+
+        target.getTasks().register("javamark", JavaMarkTask.class, task -> {
             task.setGroup("documentation");
             task.setDescription("Generates documentation in markdown format using the JavaMark doclet.");
             task.getOptions().doclet(DOCLET_CLASS);
@@ -53,6 +64,10 @@ public class JavaMarkPlugin implements Plugin<Project>
                 {
                     throw new IllegalStateException("Options are not standard");
                 }
+
+                task.setClasspath(sourceSet.getOutput().plus(sourceSet.getCompileClasspath()));
+                task.setSource(sourceSet.getAllJava());
+                task.getModularity().getInferModulePath().convention(javaPluginExtension.getModularity().getInferModulePath());
             });
         });
     }
