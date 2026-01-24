@@ -35,6 +35,11 @@ import java.util.stream.Collectors;
 
 public class JavaMarkDoclet implements Doclet
 {
+
+    public JavaMarkDoclet()
+    {
+    }
+
     private final HtmlDoclet innerDoclet = new HtmlDoclet(this);
 
     @Override
