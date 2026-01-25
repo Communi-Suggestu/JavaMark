@@ -14,9 +14,9 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class JavaMarkPlugin implements Plugin<Project>
 {
-
     private static final String CONFIGURATION_NAME = "javaMarkDoclet";
     private static final String DOCLET_CLASS       = "com.communi.suggestu.javamark.doclet.JavaMarkDoclet";
 

@@ -34,7 +34,7 @@ public class PackageFileBuilder {
         StringBuilder builder = new StringBuilder();
         // 1. Frontmatter
         builder.append("---\n");
-        builder.append("title: ").append(pkg.getQualifiedName()).append("\n");
+        builder.append("title: ").append(pkg.getSimpleName()).append("\n");
         builder.append("---\n\n");
         // 2. Header
         builder.append("# Package: ").append(pkg.getQualifiedName()).append("\n\n---\n\n");
