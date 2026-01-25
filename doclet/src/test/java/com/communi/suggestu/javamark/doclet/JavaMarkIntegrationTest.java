@@ -2,6 +2,8 @@ package com.communi.suggestu.javamark.doclet;
 
 import org.junit.jupiter.api.Test;
 
+import javax.tools.DocumentationTool;
+import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -39,6 +41,23 @@ public class JavaMarkIntegrationTest
         });
         assertThat(result).isEqualTo(0);
     }
+
+    @Test
+    void testDocToolIntegration() throws Exception {
+        DocumentationTool docTool = ToolProvider.getSystemDocumentationTool();
+
+        String outputDirectory = "target/javadoc-output";
+        deleteRecursively(outputDirectory);
+        int result = (int) docTool.run(System.in, System.out, System.err, new String[]{
+            "--module-path", classpath(),
+            "-doclet", "com.communi.suggestu.javamark.doclet.JavaMarkDoclet",
+            "--source-path", "../example/src/main/java",
+            "-d", outputDirectory,
+            "-subpackages", "com.communi.suggestu.javamark.example",
+        });
+        assertThat(result).isEqualTo(0);
+    }
+
 
     @Test
     void testHtmlJavadocIntegration() throws Exception {
