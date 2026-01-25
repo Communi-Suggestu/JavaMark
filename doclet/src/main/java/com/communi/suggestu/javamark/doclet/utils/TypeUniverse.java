@@ -138,17 +138,10 @@ public class TypeUniverse {
 
     public List<String> getPackageHierarchy(PackageElement pkg)
     {
-        List<String> hierarchy = new ArrayList<>();
-        while (pkg != null && !pkg.isUnnamed()) {
-            hierarchy.add(0, pkg.getSimpleName().toString());
-            Element enclosing = pkg.getEnclosingElement();
-            if (enclosing instanceof PackageElement) {
-                pkg = (PackageElement) enclosing;
-            } else {
-                break;
-            }
-        }
-        return hierarchy;
+        if (pkg.isUnnamed())
+            return Collections.emptyList();
+
+        return List.of(pkg.getQualifiedName().toString().split("\\.")).reversed();
     }
 
     /**
