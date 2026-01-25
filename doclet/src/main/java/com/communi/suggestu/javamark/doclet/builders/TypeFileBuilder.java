@@ -11,6 +11,7 @@ import com.communi.suggestu.javamark.doclet.writers.MarkdownAnnotationTypeMember
 import com.communi.suggestu.javamark.doclet.writers.MarkdownConstructorWriterImpl;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownEnumConstantsWriterImpl;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownFieldWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownHtmlDocletWriter;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownMethodWriterImpl;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownPropertyWriterImpl;
 import com.sun.source.doctree.DeprecatedTree;
@@ -254,7 +255,7 @@ public class TypeFileBuilder
                 return;
             }
 
-            var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
+            var htmlWriter = new MarkdownHtmlDocletWriter(configuration, DocPath.create(path.toString()));
             var description = DocTreeUtils.getTags(tree, configuration);
             result.append(name).append(" - ").append(
                 htmlWriter.commentTagsToContent(element, description, false, false)
@@ -461,7 +462,7 @@ public class TypeFileBuilder
             // generate documentation for the class.
             if (!tags.isEmpty())
             {
-                var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
+                var htmlWriter = new MarkdownHtmlDocletWriter(configuration, DocPath.create(path.toString()));
                 var content = htmlWriter.commentTagsToContent(typeElement, tags, false, true);
                 return content.toString();
             }
