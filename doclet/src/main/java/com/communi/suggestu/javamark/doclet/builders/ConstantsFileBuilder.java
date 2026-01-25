@@ -96,6 +96,7 @@ public class ConstantsFileBuilder
             "--- \n" +
                 "title: Constants\n" +
                 "aside: false \n" +
+                "sidebar: false \n" +
                 "order: 1000000000 \n" +
                 "---\n";
 

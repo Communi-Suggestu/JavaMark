@@ -103,6 +103,7 @@ public class TypeFileBuilder
             "--- \n" +
                 "title: " + element.getSimpleName() + "\n" +
                 "aside: false \n" +
+                "sidebar: false \n" +
                 "---\n";
 
         final PackageElement packageElement = ElementUtils.getEnclosingPackage(element);
