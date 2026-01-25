@@ -141,7 +141,7 @@ public class TypeUniverse {
         if (pkg.isUnnamed())
             return Collections.emptyList();
 
-        return List.of(pkg.getQualifiedName().toString().split("\\.")).reversed();
+        return List.of(pkg.getQualifiedName().toString().split("\\."));
     }
 
     /**
