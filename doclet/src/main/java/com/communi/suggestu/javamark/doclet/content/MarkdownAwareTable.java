@@ -330,7 +330,7 @@ public class MarkdownAwareTable<T> extends Table<T>
 
     private Content toContent()
     {
-        Content main = new ContentBuilder();
+        Content main = new NoneEncodingContentBuilder();
         if ((tabs == null || occurringTabs.size() == 1) && !alwaysShowDefaultTab)
         {
             if (tabs == null)

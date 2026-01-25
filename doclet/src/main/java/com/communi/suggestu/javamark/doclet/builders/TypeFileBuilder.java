@@ -14,9 +14,9 @@ import com.communi.suggestu.javamark.doclet.writers.MarkdownFieldWriterImpl;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownHtmlDocletWriter;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownMethodWriterImpl;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownPropertyWriterImpl;
+import com.communi.suggestu.javamark.doclet.writers.MarkdownSubWriterHolderWriter;
 import com.sun.source.doctree.DeprecatedTree;
 import com.sun.source.doctree.DocTree;
-import jdk.javadoc.internal.doclets.formats.html.ClassWriterImpl;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
 import jdk.javadoc.internal.doclets.formats.html.HtmlDocletWriter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlOptions;
@@ -507,8 +507,8 @@ public class TypeFileBuilder
     public String listEnumConstantsDetails(TypeElement element) throws DocletException
     {
         var context = getContext();
-        var classWriter = new ClassWriterImpl(configuration, element, classTree);
-        var builder = EnumConstantBuilder.getInstance(context, element, new MarkdownEnumConstantsWriterImpl(classWriter, element));
+        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
+        var builder = EnumConstantBuilder.getInstance(context, element, new MarkdownEnumConstantsWriterImpl(innerWriter, element));
 
         var content = new ContentBuilder();
         builder.build(content);
@@ -518,8 +518,8 @@ public class TypeFileBuilder
     public String listPropertyDetails(TypeElement element) throws DocletException
     {
         var context = getContext();
-        var classWriter = new ClassWriterImpl(configuration, element, classTree);
-        var builder = PropertyBuilder.getInstance(context, element, new MarkdownPropertyWriterImpl(classWriter, element));
+        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
+        var builder = PropertyBuilder.getInstance(context, element, new MarkdownPropertyWriterImpl(innerWriter, element));
 
         var content = new ContentBuilder();
         builder.build(content);
@@ -529,8 +529,8 @@ public class TypeFileBuilder
     public String listFieldDetails(TypeElement element) throws DocletException
     {
         var context = getContext();
-        var classWriter = new ClassWriterImpl(configuration, element, classTree);
-        var builder = FieldBuilder.getInstance(context, element, new MarkdownFieldWriterImpl(classWriter, element));
+        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
+        var builder = FieldBuilder.getInstance(context, element, new MarkdownFieldWriterImpl(innerWriter, element));
 
         var content = new ContentBuilder();
         builder.build(content);
@@ -540,8 +540,8 @@ public class TypeFileBuilder
     public String listConstructorDetails(TypeElement element) throws DocletException
     {
         var context = getContext();
-        var classWriter = new ClassWriterImpl(configuration, element, classTree);
-        var builder = ConstructorBuilder.getInstance(context, element, new MarkdownConstructorWriterImpl(classWriter, element));
+        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
+        var builder = ConstructorBuilder.getInstance(context, element, new MarkdownConstructorWriterImpl(innerWriter, element));
 
         var content = new ContentBuilder();
         builder.build(content);
@@ -551,8 +551,8 @@ public class TypeFileBuilder
     public String listAnnotationMemberDetails(TypeElement element) throws DocletException
     {
         var context = getContext();
-        var classWriter = new ClassWriterImpl(configuration, element, classTree);
-        var builder = AnnotationTypeMemberBuilder.getInstance(context, element, new MarkdownAnnotationTypeMemberWriterImpl(classWriter, element,
+        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
+        var builder = AnnotationTypeMemberBuilder.getInstance(context, element, new MarkdownAnnotationTypeMemberWriterImpl(innerWriter, element,
             MarkdownAnnotationTypeMemberWriterImpl.Kind.ANY));
 
         var content = new ContentBuilder();
@@ -563,8 +563,8 @@ public class TypeFileBuilder
     public String listMethodMemberDetails(TypeElement element) throws DocletException
     {
         var context = getContext();
-        var classWriter = new ClassWriterImpl(configuration, element, classTree);
-        var builder = MethodBuilder.getInstance(context, element, new MarkdownMethodWriterImpl(classWriter, element));
+        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
+        var builder = MethodBuilder.getInstance(context, element, new MarkdownMethodWriterImpl(innerWriter, element));
 
         var content = new ContentBuilder();
         builder.build(content);
