@@ -37,6 +37,7 @@ tableau {
         }
     }
     maven {
+        disableDefaultPublication()
         publishToLDTTeamMaven('communi-suggestu-javamark')
         publishLocally()
         pom({
@@ -49,7 +50,7 @@ tableau {
 gradlePlugin {
     // Define the plugin
     plugins {
-        greeting {
+        javamark {
             id = 'com.communi-suggestu.javamark'
             implementationClass = 'com.communi.suggestu.javamark.gradle.JavaMarkPlugin'
         }

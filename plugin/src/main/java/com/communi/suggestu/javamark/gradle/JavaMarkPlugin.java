@@ -38,7 +38,7 @@ public class JavaMarkPlugin implements Plugin<Project>
     @Override
     public void apply(Project target)
     {
-        var version = target.getProviders().gradleProperty("javaMarkVersion").orElse("latest.release");
+        var version = target.getProviders().gradleProperty("javamark.version").orElse(target.getProviders().gradleProperty("javaMarkVersion").orElse("latest.release"));
         var configuration = target.getConfigurations().register(CONFIGURATION_NAME);
         target.getDependencies().addProvider(CONFIGURATION_NAME, version.map(v -> "com.communi-suggestu.javamark:doclet:" + v));
 
@@ -53,18 +53,12 @@ public class JavaMarkPlugin implements Plugin<Project>
             task.getOptions().setDocletpath(List.copyOf(configuration.get().getFiles()));
             task.setDestinationDir(target.getLayout().getBuildDirectory().dir("docs/markdown").get().getAsFile());
             task.options(opts -> {
-                if (opts instanceof StandardJavadocDocletOptions sOpts)
-                {
-                    sOpts.addMultilineStringsOption("-add-exports")
-                            .setValue(EXPORTS);
-                    sOpts.addMultilineStringsOption("-add-opens")
-                            .setValue(OPENS);
-                }
-                else
-                {
-                    throw new IllegalStateException("Options are not standard");
-                }
-
+                EXPORTS.forEach(
+                    export -> opts.jFlags("--add-exports=%s".formatted(export))
+                );
+                OPENS.forEach(
+                    opens -> opts.jFlags("--add-opens=%s".formatted(opens))
+                );
                 task.setClasspath(sourceSet.getOutput().plus(sourceSet.getCompileClasspath()));
                 task.setSource(sourceSet.getAllJava());
                 task.getModularity().getInferModulePath().convention(javaPluginExtension.getModularity().getInferModulePath());
