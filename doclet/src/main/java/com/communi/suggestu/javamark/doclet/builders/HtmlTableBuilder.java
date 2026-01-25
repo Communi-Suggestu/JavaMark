@@ -53,7 +53,7 @@ public class HtmlTableBuilder implements TableBuilder {
             throw new IllegalStateException("Headers must be set before building the table");
         }
         StringBuilder table = new StringBuilder();
-        table.append("<table>\n  <thead>\n    <tr>");
+        table.append("<table class=\"stretched-table\">\n  <thead>\n    <tr>");
         for (String header : headers) {
             table.append("<th>").append(header).append("</th>");
         }
