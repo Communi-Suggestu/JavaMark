@@ -113,7 +113,18 @@ public class TypeFileBuilder
             builder += "_Package:_ " + packageLink + Constants.MARKDOWN_NEW_LINE;
         }
 
-        builder += "# " + StringUtils.capitalize(element.getKind().name().toLowerCase(Locale.ROOT)) + " " +
+        String key = switch (element.getKind()) {
+            case INTERFACE       -> "doclet.Interface";
+            case ENUM            -> "doclet.Enum";
+            case RECORD          -> "doclet.RecordClass";
+            case ANNOTATION_TYPE -> "doclet.AnnotationType";
+            case CLASS           -> "doclet.Class";
+            default -> throw new IllegalStateException(element.getKind() + " " + element);
+        };
+
+        var kindTitle = configuration.docResources.getText(key);
+
+        builder += "# " + StringUtils.capitalize(kindTitle) + " " +
             displayNameBuilder.withDisplayMode(TypeDisplayNameBuilder.DisplayMode.JAVADOC).build(element) +
             Constants.MARKDOWN_NEW_LINE;
 
@@ -446,13 +457,13 @@ public class TypeFileBuilder
     {
         if (!options.noComment())
         {
+            var tags = utils.getFullBody(typeElement);
             // generate documentation for the class.
-            if (!utils.getFullBody(typeElement).isEmpty())
+            if (!tags.isEmpty())
             {
                 var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
-                var target = new NoneEncodingContentBuilder();
-                htmlWriter.addInlineComment(typeElement, target);
-                return target.toString();
+                var content = htmlWriter.commentTagsToContent(typeElement, tags, false, true);
+                return content.toString();
             }
         }
 
