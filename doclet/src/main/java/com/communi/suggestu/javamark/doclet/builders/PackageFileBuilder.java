@@ -85,7 +85,7 @@ public class PackageFileBuilder {
 
     private String buildTypeTable(List<TypeElement> types, PackageElement in) {
         if (types == null || types.isEmpty()) return "No types found.";
-        TableBuilder table = new MarkdownTableBuilder().withHeaders("Class", "Description");
+        TableBuilder table = new HtmlTableBuilder().withHeaders("Class", "Description");
         for (TypeElement type : types) {
             String link = typeLinkBuilder.withDisplayMode(TypeDisplayNameBuilder.DisplayMode.SIMPLE_NAME).build(in, type.asType());
             String doc = ElementUtils.getDocComment(type, docTrees);
@@ -101,7 +101,7 @@ public class PackageFileBuilder {
         List<PackageElement> children = typeUniverse.getChildPackages(pkg);
         PackageElement parent = typeUniverse.getParentOf(pkg);
         if (parent == null && children.isEmpty()) return "";
-        TableBuilder table = new MarkdownTableBuilder().withHeaders("Package", "Description");
+        TableBuilder table = new HtmlTableBuilder().withHeaders("Package", "Description");
         if (parent != null) {
             String link = packageLinkBuilder.withDisplayMode(PackageLinkBuilder.DisplayMode.FULLY_QUALIFIED_NAME).build(pkg, parent);
             String doc = ElementUtils.getDocComment(parent, docTrees);
