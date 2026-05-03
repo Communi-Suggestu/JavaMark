@@ -5,11 +5,11 @@ import com.communi.suggestu.javamark.doclet.builders.VitepressTabbedEnvironmentB
 import com.communi.suggestu.javamark.doclet.utils.TableHeaderUtils;
 import jdk.javadoc.internal.doclets.formats.html.Table;
 import jdk.javadoc.internal.doclets.formats.html.TableHeader;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlId;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlTree;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
+import jdk.javadoc.internal.html.HtmlId;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.HtmlTree;
 
 import java.io.IOException;
 import java.io.Writer;

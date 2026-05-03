@@ -3,13 +3,13 @@ package com.communi.suggestu.javamark.doclet.builders;
 import com.communi.suggestu.javamark.doclet.utils.Constants;
 import com.communi.suggestu.javamark.doclet.writers.MarkdownConstantsSummaryWriterImpl;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.toolkit.Content;
 import jdk.javadoc.internal.doclets.toolkit.DocletException;
 import jdk.javadoc.internal.doclets.toolkit.util.DocFile;
 import jdk.javadoc.internal.doclets.toolkit.util.DocPath;
 import jdk.javadoc.internal.doclets.toolkit.util.Utils;
 import jdk.javadoc.internal.doclets.toolkit.util.VisibleMemberTable;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
@@ -297,7 +297,7 @@ public class ConstantsFileBuilder
             members.addAll(vmt.getVisibleMembers(FIELDS));
             members.addAll(vmt.getVisibleMembers(ENUM_CONSTANTS));
             SortedSet<VariableElement> includes =
-                new TreeSet<>(utils.comparators.makeGeneralPurposeComparator());
+                new TreeSet<>(utils.comparators.generalPurposeComparator());
             for (Element element : members) {
                 VariableElement member = (VariableElement)element;
                 if (member.getConstantValue() != null) {

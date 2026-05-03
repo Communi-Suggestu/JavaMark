@@ -9,32 +9,27 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.utils.HtmlIdUtils;
 import com.communi.suggestu.javamark.doclet.content.VitepressTableContent;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlLinkInfo;
-import jdk.javadoc.internal.doclets.formats.html.MethodWriterImpl;
-import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
+import jdk.javadoc.internal.doclets.formats.html.MethodWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.Entity;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlId;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.Text;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
+import jdk.javadoc.internal.html.Entity;
+import jdk.javadoc.internal.html.HtmlId;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.Text;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
-public class MarkdownMethodWriterImpl extends MethodWriterImpl
+public class MarkdownMethodWriterImpl extends MethodWriter
 {
-    public MarkdownMethodWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
+    public MarkdownMethodWriterImpl(final ClassWriter writer)
     {
-        super(writer, typeElement);
-    }
-
-    @Override
-    public void addSummary(final Content summariesList, final Content content)
-    {
-        summariesList.add(content);
+        super(writer);
     }
 
     @Override
@@ -46,9 +41,9 @@ public class MarkdownMethodWriterImpl extends MethodWriterImpl
     @Override
     protected Table<Element> createSummaryTable()
     {
-        return new MarkdownAwareTable<Element>(HtmlStyle.summaryTable)
+        return new MarkdownAwareTable<Element>(HtmlStyles.summaryTable)
             .setHeader(getSummaryTableHeader(typeElement))
-            .setColumnStyles(HtmlStyle.colFirst, HtmlStyle.colSecond, HtmlStyle.colLast)
+            .setColumnStyles(HtmlStyles.colFirst, HtmlStyles.colSecond, HtmlStyles.colLast)
             .setId(HtmlId.of("method-summary-table"))
             .setDefaultTab(contents.getContent("doclet.All_Methods"))
             .addTab(contents.getContent("doclet.Static_Methods"), utils::isStatic)

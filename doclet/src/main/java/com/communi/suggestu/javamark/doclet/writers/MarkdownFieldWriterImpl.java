@@ -9,15 +9,16 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.utils.HtmlIdUtils;
 import com.communi.suggestu.javamark.doclet.content.VitepressTableContent;
-import jdk.javadoc.internal.doclets.formats.html.FieldWriterImpl;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
+import jdk.javadoc.internal.doclets.formats.html.FieldWriter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlLinkInfo;
-import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.Entity;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.Text;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
+import jdk.javadoc.internal.html.Entity;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.Text;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -25,17 +26,11 @@ import javax.lang.model.element.VariableElement;
 import java.util.Arrays;
 import java.util.List;
 
-public class MarkdownFieldWriterImpl extends FieldWriterImpl
+public class MarkdownFieldWriterImpl extends FieldWriter
 {
-    public MarkdownFieldWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
+    public MarkdownFieldWriterImpl(final ClassWriter writer)
     {
-        super(writer, typeElement);
-    }
-
-    @Override
-    public void addSummary(final Content summariesList, final Content content)
-    {
-        summariesList.add(content);
+        super(writer);
     }
 
     @Override
@@ -47,10 +42,10 @@ public class MarkdownFieldWriterImpl extends FieldWriterImpl
     @Override
     protected Table<Element> createSummaryTable()
     {
-        List<HtmlStyle> bodyRowStyles = Arrays.asList(HtmlStyle.colFirst, HtmlStyle.colSecond,
-            HtmlStyle.colLast);
+        List<HtmlStyle> bodyRowStyles = Arrays.asList(HtmlStyles.colFirst, HtmlStyles.colSecond,
+            HtmlStyles.colLast);
 
-        return new MarkdownAwareTable<Element>(HtmlStyle.summaryTable)
+        return new MarkdownAwareTable<Element>(HtmlStyles.summaryTable)
             .setCaption(contents.fields)
             .setHeader(getSummaryTableHeader(typeElement))
             .setColumnStyles(bodyRowStyles);

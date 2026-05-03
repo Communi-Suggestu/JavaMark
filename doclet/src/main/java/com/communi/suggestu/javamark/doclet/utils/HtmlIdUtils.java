@@ -1,6 +1,6 @@
 package com.communi.suggestu.javamark.doclet.utils;
 
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlId;
+import jdk.javadoc.internal.html.HtmlId;
 import jdk.javadoc.internal.doclets.toolkit.util.Utils;
 
 import javax.lang.model.element.ExecutableElement;

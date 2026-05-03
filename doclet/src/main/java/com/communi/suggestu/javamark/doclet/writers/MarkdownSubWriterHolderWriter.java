@@ -6,11 +6,11 @@ import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.StartElementTree;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
 import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
-import jdk.javadoc.internal.doclets.formats.html.markup.Entity;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlTree;
-import jdk.javadoc.internal.doclets.formats.html.markup.RawHtml;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.Entity;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.HtmlTree;
+import jdk.javadoc.internal.html.RawHtml;
 import jdk.javadoc.internal.doclets.toolkit.util.DocPath;
 
 import javax.lang.model.element.Element;
@@ -25,6 +25,12 @@ public class MarkdownSubWriterHolderWriter extends SubWriterHolderWriter
     public MarkdownSubWriterHolderWriter(final HtmlConfiguration configuration, final DocPath filename)
     {
         super(configuration, filename);
+    }
+
+    @Override
+    public void buildPage()
+    {
+        // This writer acts as a helper for member rendering and does not build a page directly.
     }
 
     @Override

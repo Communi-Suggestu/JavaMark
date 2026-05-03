@@ -5,15 +5,13 @@ import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.StartElementTree;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
 import jdk.javadoc.internal.doclets.formats.html.HtmlDocletWriter;
-import jdk.javadoc.internal.doclets.formats.html.TagletWriterImpl;
-import jdk.javadoc.internal.doclets.formats.html.markup.RawHtml;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.RawHtml;
 import jdk.javadoc.internal.doclets.toolkit.util.DocPath;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import java.util.List;
-import java.util.Queue;
 import java.util.Stack;
 
 public class MarkdownHtmlDocletWriter extends HtmlDocletWriter
@@ -27,6 +25,12 @@ public class MarkdownHtmlDocletWriter extends HtmlDocletWriter
     public MarkdownHtmlDocletWriter(final HtmlConfiguration configuration, final DocPath path)
     {
         super(configuration, path);
+    }
+
+    @Override
+    public void buildPage()
+    {
+        // This writer is used as a content helper, not as a standalone page builder.
     }
 
     @Override

@@ -3,6 +3,10 @@ plugins {
 }
 
 java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(providers.gradleProperty("javaVersion").get().toInteger()))
+    }
+
     withJavadocJar()
 }
 

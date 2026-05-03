@@ -17,6 +17,12 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(providers.gradleProperty("javaVersion").get().toInteger()))
+    }
+}
+
 tableau {
     project {
         group = "com.communi-suggestu.javamark"
@@ -52,10 +58,9 @@ tasks.withType(JavaCompile).configureEach {
                     "--add-exports", "jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED",
                     "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html=ALL-UNNAMED",
                     "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.util=ALL-UNNAMED",
-                    "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.taglets=ALL-UNNAMED",
                     "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit=ALL-UNNAMED",
                     "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html.markup=ALL-UNNAMED",
-                    "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.builders=ALL-UNNAMED"
+                    "--add-exports", "jdk.javadoc/jdk.javadoc.internal.html=ALL-UNNAMED"
             ]
                     .toList()
 }
@@ -69,11 +74,10 @@ tasks.withType(Test).configureEach {
             "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html=ALL-UNNAMED",
             "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html.markup=ALL-UNNAMED",
             "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.util=ALL-UNNAMED",
-            "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.taglets=ALL-UNNAMED",
             "--add-exports", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit=ALL-UNNAMED",
+            "--add-exports", "jdk.javadoc/jdk.javadoc.internal.html=ALL-UNNAMED",
             "--add-opens", "jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED",
-            "--add-opens", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html=ALL-UNNAMED",
-            "--add-opens", "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.builders=ALL-UNNAMED"
+            "--add-opens", "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html=ALL-UNNAMED"
     )
 
     testLogging {

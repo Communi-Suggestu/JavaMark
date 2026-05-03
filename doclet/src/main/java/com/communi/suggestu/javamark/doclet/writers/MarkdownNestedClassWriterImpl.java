@@ -4,30 +4,31 @@ import com.communi.suggestu.javamark.doclet.content.MarkdownAwareContentBuilder;
 import com.communi.suggestu.javamark.doclet.content.MarkdownAwareTable;
 import com.communi.suggestu.javamark.doclet.utils.Constants;
 import com.sun.source.doctree.DocTree;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlLinkInfo;
-import jdk.javadoc.internal.doclets.formats.html.NestedClassWriterImpl;
-import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
+import jdk.javadoc.internal.doclets.formats.html.NestedClassWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.Entity;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.Text;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
+import jdk.javadoc.internal.html.Entity;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.Text;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.Arrays;
 import java.util.List;
 
-public class MarkdownNestedClassWriterImpl extends NestedClassWriterImpl
+public class MarkdownNestedClassWriterImpl extends NestedClassWriter
 {
-    public MarkdownNestedClassWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
+    public MarkdownNestedClassWriterImpl(final ClassWriter writer)
     {
-        super(writer, typeElement);
+        super(writer);
     }
 
     @Override
-    public Content getMemberSummaryHeader(final TypeElement typeElement, final Content content)
+    public Content getMemberSummaryHeader(final Content content)
     {
         var builder = new ContentBuilder();
         writer.addSummaryHeader(this, builder);
@@ -46,12 +47,6 @@ public class MarkdownNestedClassWriterImpl extends NestedClassWriterImpl
     public Content getInheritedSummaryLinks()
     {
         return new MarkdownAwareContentBuilder();
-    }
-
-    @Override
-    public void addSummary(final Content summariesList, final Content content)
-    {
-        summariesList.add(content);
     }
 
     @Override
@@ -80,10 +75,10 @@ public class MarkdownNestedClassWriterImpl extends NestedClassWriterImpl
     @Override
     protected Table<Element> createSummaryTable()
     {
-        List<HtmlStyle> bodyRowStyles = Arrays.asList(HtmlStyle.colFirst, HtmlStyle.colSecond,
-            HtmlStyle.colLast);
+        List<HtmlStyle> bodyRowStyles = Arrays.asList(HtmlStyles.colFirst, HtmlStyles.colSecond,
+            HtmlStyles.colLast);
 
-        return new MarkdownAwareTable<Element>(HtmlStyle.summaryTable)
+        return new MarkdownAwareTable<Element>(HtmlStyles.summaryTable)
             .setCaption(contents.getContent("doclet.Nested_Classes"))
             .setHeader(getSummaryTableHeader(typeElement))
             .setColumnStyles(bodyRowStyles);

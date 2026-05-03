@@ -1,7 +1,7 @@
 package com.communi.suggestu.javamark.doclet.content;
 
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlId;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.HtmlId;
 
 import java.io.IOException;
 import java.io.Writer;

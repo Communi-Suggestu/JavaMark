@@ -18,24 +18,16 @@ import com.communi.suggestu.javamark.doclet.writers.MarkdownSubWriterHolderWrite
 import com.sun.source.doctree.DeprecatedTree;
 import com.sun.source.doctree.DocTree;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
-import jdk.javadoc.internal.doclets.formats.html.HtmlDocletWriter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlOptions;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
 import jdk.javadoc.internal.doclets.toolkit.DocletException;
-import jdk.javadoc.internal.doclets.toolkit.builders.AbstractBuilder;
-import jdk.javadoc.internal.doclets.toolkit.builders.AnnotationTypeMemberBuilder;
-import jdk.javadoc.internal.doclets.toolkit.builders.BuilderFactory;
-import jdk.javadoc.internal.doclets.toolkit.builders.ConstructorBuilder;
-import jdk.javadoc.internal.doclets.toolkit.builders.EnumConstantBuilder;
-import jdk.javadoc.internal.doclets.toolkit.builders.FieldBuilder;
-import jdk.javadoc.internal.doclets.toolkit.builders.MethodBuilder;
-import jdk.javadoc.internal.doclets.toolkit.builders.PropertyBuilder;
 import jdk.javadoc.internal.doclets.toolkit.util.ClassTree;
 import jdk.javadoc.internal.doclets.toolkit.util.CommentHelper;
 import jdk.javadoc.internal.doclets.toolkit.util.DocFile;
 import jdk.javadoc.internal.doclets.toolkit.util.DocPath;
 import jdk.javadoc.internal.doclets.toolkit.util.Utils;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -272,7 +264,7 @@ public class TypeFileBuilder
             return "";
         }
 
-        SortedSet<TypeMirror> interfaces = new TreeSet<>(configuration.utils.comparators.makeTypeMirrorClassUseComparator());
+        SortedSet<TypeMirror> interfaces = new TreeSet<>(configuration.utils.comparators.typeMirrorClassUseComparator());
         interfaces.addAll(configuration.utils.getAllInterfaces(element));
 
         if (interfaces.isEmpty())
@@ -392,7 +384,7 @@ public class TypeFileBuilder
 
     private String listClassSignature(TypeElement element)
     {
-        var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
+        var htmlWriter = new MarkdownHtmlDocletWriter(configuration, DocPath.create(path.toString()));
         var content = SignatureUtils.createTypeSignatureAndToContent(element, htmlWriter);
         var builder = new MarkdownAwareContentBuilder();
         builder.add(content);
@@ -429,7 +421,7 @@ public class TypeFileBuilder
             List<? extends DocTree> commentTags = ch.getBody(dt);
             if (!commentTags.isEmpty())
             {
-                var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()));
+                var htmlWriter = new MarkdownHtmlDocletWriter(configuration, DocPath.create(path.toString()));
                 var target = new MarkdownAwareContentBuilder();
                 htmlWriter.addInlineDeprecatedComment(
                     typeElement,
@@ -475,8 +467,7 @@ public class TypeFileBuilder
     {
         if (!options.noComment())
         {
-            //Custom inner class which gives access to the underlying addTagsInfo method.
-            var htmlWriter = new HtmlDocletWriter(configuration, DocPath.create(path.toString()))
+            var htmlWriter = new MarkdownHtmlDocletWriter(configuration, DocPath.create(path.toString()))
             {
                 @Override
                 public void addTagsInfo(final Element e, final Content content)
@@ -506,68 +497,61 @@ public class TypeFileBuilder
 
     public String listEnumConstantsDetails(TypeElement element) throws DocletException
     {
-        var context = getContext();
-        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
-        var builder = EnumConstantBuilder.getInstance(context, element, new MarkdownEnumConstantsWriterImpl(innerWriter, element));
+        var classWriter = new ClassWriter(configuration, element, classTree);
+        var writer = new MarkdownEnumConstantsWriterImpl(classWriter);
 
         var content = new ContentBuilder();
-        builder.build(content);
+        writer.buildDetails(content);
         return content.toString();
     }
 
     public String listPropertyDetails(TypeElement element) throws DocletException
     {
-        var context = getContext();
-        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
-        var builder = PropertyBuilder.getInstance(context, element, new MarkdownPropertyWriterImpl(innerWriter, element));
+        var classWriter = new ClassWriter(configuration, element, classTree);
+        var writer = new MarkdownPropertyWriterImpl(classWriter);
 
         var content = new ContentBuilder();
-        builder.build(content);
+        writer.buildDetails(content);
         return content.toString();
     }
 
     public String listFieldDetails(TypeElement element) throws DocletException
     {
-        var context = getContext();
-        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
-        var builder = FieldBuilder.getInstance(context, element, new MarkdownFieldWriterImpl(innerWriter, element));
+        var classWriter = new ClassWriter(configuration, element, classTree);
+        var writer = new MarkdownFieldWriterImpl(classWriter);
 
         var content = new ContentBuilder();
-        builder.build(content);
+        writer.buildDetails(content);
         return content.toString();
     }
 
     public String listConstructorDetails(TypeElement element) throws DocletException
     {
-        var context = getContext();
-        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
-        var builder = ConstructorBuilder.getInstance(context, element, new MarkdownConstructorWriterImpl(innerWriter, element));
+        var classWriter = new ClassWriter(configuration, element, classTree);
+        var writer = new MarkdownConstructorWriterImpl(classWriter);
 
         var content = new ContentBuilder();
-        builder.build(content);
+        writer.buildDetails(content);
         return content.toString();
     }
 
     public String listAnnotationMemberDetails(TypeElement element) throws DocletException
     {
-        var context = getContext();
-        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
-        var builder = AnnotationTypeMemberBuilder.getInstance(context, element, new MarkdownAnnotationTypeMemberWriterImpl(innerWriter, element,
-            MarkdownAnnotationTypeMemberWriterImpl.Kind.ANY));
+        var classWriter = new ClassWriter(configuration, element, classTree);
+        var writer = new MarkdownAnnotationTypeMemberWriterImpl(classWriter, MarkdownAnnotationTypeMemberWriterImpl.Kind.ANY);
 
         var content = new ContentBuilder();
-        builder.build(content);
+        writer.buildDetails(content);
         return content.toString();
     }
 
     public String listMethodMemberDetails(TypeElement element) throws DocletException
     {
-        var context = getContext();
-        var innerWriter = new MarkdownSubWriterHolderWriter(configuration, DocPath.create(path.toString()));
-        var builder = MethodBuilder.getInstance(context, element, new MarkdownMethodWriterImpl(innerWriter, element));
+        var classWriter = new ClassWriter(configuration, element, classTree);
+        var writer = new MarkdownMethodWriterImpl(classWriter);
 
         var content = new ContentBuilder();
-        builder.build(content);
+        writer.buildDetails(content);
         return content.toString();
     }
 
@@ -584,17 +568,4 @@ public class TypeFileBuilder
         Files.writeString(path, result);
     }
 
-    private AbstractBuilder.Context getContext()
-    {
-        try
-        {
-            var field = BuilderFactory.class.getDeclaredField("context");
-            field.setAccessible(true);
-            return (AbstractBuilder.Context) field.get(configuration.getBuilderFactory());
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
 }

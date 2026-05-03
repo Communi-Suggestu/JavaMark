@@ -9,31 +9,26 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.utils.HtmlIdUtils;
 import com.communi.suggestu.javamark.doclet.content.VitepressTableContent;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlLinkInfo;
-import jdk.javadoc.internal.doclets.formats.html.PropertyWriterImpl;
-import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
+import jdk.javadoc.internal.doclets.formats.html.PropertyWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.Entity;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.Text;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
+import jdk.javadoc.internal.html.Entity;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.Text;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
-public class MarkdownPropertyWriterImpl extends PropertyWriterImpl
+public class MarkdownPropertyWriterImpl extends PropertyWriter
 {
-    public MarkdownPropertyWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
+    public MarkdownPropertyWriterImpl(final ClassWriter writer)
     {
-        super(writer, typeElement);
-    }
-
-    @Override
-    public void addSummary(final Content summariesList, final Content content)
-    {
-        summariesList.add(content);
+        super(writer);
     }
 
     @Override
@@ -45,10 +40,10 @@ public class MarkdownPropertyWriterImpl extends PropertyWriterImpl
     @Override
     protected Table<Element> createSummaryTable()
     {
-        return new MarkdownAwareTable<Element>(HtmlStyle.summaryTable)
+        return new MarkdownAwareTable<Element>(HtmlStyles.summaryTable)
             .setCaption(contents.properties)
             .setHeader(getSummaryTableHeader(typeElement))
-            .setColumnStyles(HtmlStyle.colFirst, HtmlStyle.colSecond, HtmlStyle.colLast);
+            .setColumnStyles(HtmlStyles.colFirst, HtmlStyles.colSecond, HtmlStyles.colLast);
     }
 
     @Override

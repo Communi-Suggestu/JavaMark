@@ -9,19 +9,21 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.utils.HtmlIdUtils;
 import com.communi.suggestu.javamark.doclet.content.VitepressTableContent;
-import jdk.javadoc.internal.doclets.formats.html.AnnotationTypeMemberWriterImpl;
-import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
+import jdk.javadoc.internal.doclets.formats.html.AnnotationTypeMemberWriter;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.Text;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles;
+import jdk.javadoc.internal.doclets.toolkit.util.VisibleMemberTable;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.Text;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
-public class MarkdownAnnotationTypeMemberWriterImpl extends AnnotationTypeMemberWriterImpl
+public class MarkdownAnnotationTypeMemberWriterImpl extends AnnotationTypeMemberWriter
 {
     public enum Kind {
         OPTIONAL,
@@ -32,44 +34,20 @@ public class MarkdownAnnotationTypeMemberWriterImpl extends AnnotationTypeMember
     private final Kind myKind;
 
     public MarkdownAnnotationTypeMemberWriterImpl(
-        final SubWriterHolderWriter writer,
-        final TypeElement annotationType,
+        final ClassWriter writer,
         final Kind kind)
     {
-        super(writer);
+        super(writer, mapKind(kind));
         this.myKind = kind;
-        setKindAndTypeElement(this, kind, annotationType);
     }
 
-    /**
-     * Uses reflection to set the superclass's final 'kind' field and the super-superclass's final 'typeElement' field.
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static void setKindAndTypeElement(MarkdownAnnotationTypeMemberWriterImpl instance, Kind kind, TypeElement annotationType) {
-        try {
-            // Set 'kind' field in AnnotationTypeMemberWriterImpl
-            Class<?> superClass = AnnotationTypeMemberWriterImpl.class;
-            java.lang.reflect.Field kindField = superClass.getDeclaredField("kind");
-            kindField.setAccessible(true);
-            // Convert our Kind to the superclass Kind via reflection
-            Class<?> superKindClass = kindField.getType();
-            Object superKind = Enum.valueOf((Class<Enum>) superKindClass, kind.name());
-            kindField.set(instance, superKind);
-
-            // Set 'typeElement' field in AbstractMemberWriter (super-superclass)
-            Class<?> abstractMemberWriterClass = superClass.getSuperclass();
-            java.lang.reflect.Field typeElementField = abstractMemberWriterClass.getDeclaredField("typeElement");
-            typeElementField.setAccessible(true);
-            typeElementField.set(instance, annotationType);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to set superclass fields via reflection", e);
-        }
-    }
-
-    @Override
-    public void addSummary(final Content summariesList, final Content content)
+    private static VisibleMemberTable.Kind mapKind(Kind kind)
     {
-        summariesList.add(content);
+        return switch (kind) {
+            case REQUIRED -> VisibleMemberTable.Kind.ANNOTATION_TYPE_MEMBER_REQUIRED;
+            case OPTIONAL -> VisibleMemberTable.Kind.ANNOTATION_TYPE_MEMBER_OPTIONAL;
+            case ANY -> VisibleMemberTable.Kind.ANNOTATION_TYPE_MEMBER;
+        };
     }
 
     @Override
@@ -85,10 +63,10 @@ public class MarkdownAnnotationTypeMemberWriterImpl extends AnnotationTypeMember
     @Override
     protected Table<Element> createSummaryTable()
     {
-        return new MarkdownAwareTable<Element>(HtmlStyle.summaryTable)
+        return new MarkdownAwareTable<Element>(HtmlStyles.summaryTable)
             .setCaption(getCaption())
             .setHeader(getSummaryTableHeader(typeElement))
-            .setColumnStyles(HtmlStyle.colFirst, HtmlStyle.colSecond, HtmlStyle.colLast);
+            .setColumnStyles(HtmlStyles.colFirst, HtmlStyles.colSecond, HtmlStyles.colLast);
     }
 
     @Override

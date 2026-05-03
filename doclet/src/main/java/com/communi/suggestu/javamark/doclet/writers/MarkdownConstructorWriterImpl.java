@@ -9,13 +9,14 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.utils.HtmlIdUtils;
 import com.communi.suggestu.javamark.doclet.content.VitepressTableContent;
-import jdk.javadoc.internal.doclets.formats.html.ConstructorWriterImpl;
-import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
+import jdk.javadoc.internal.doclets.formats.html.ConstructorWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.Text;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.Text;
 import jdk.javadoc.internal.doclets.toolkit.util.VisibleMemberTable;
 
 import javax.lang.model.element.Element;
@@ -26,28 +27,22 @@ import java.util.List;
 
 import static jdk.javadoc.internal.doclets.toolkit.util.VisibleMemberTable.Kind.CONSTRUCTORS;
 
-public class MarkdownConstructorWriterImpl extends ConstructorWriterImpl
+public class MarkdownConstructorWriterImpl extends ConstructorWriter
 {
     private boolean foundNonPubConstructor = false;
 
-    public MarkdownConstructorWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
+    public MarkdownConstructorWriterImpl(final ClassWriter writer)
     {
-        super(writer, typeElement);
+        super(writer);
 
-        VisibleMemberTable vmt = configuration.getVisibleMemberTable(typeElement);
+        VisibleMemberTable vmt = configuration.getVisibleMemberTable(this.typeElement);
         List<? extends Element> constructors = vmt.getVisibleMembers(CONSTRUCTORS);
 
         for (Element constructor : constructors) {
             if (utils.isProtected(constructor) || utils.isPrivate(constructor)) {
-                setFoundNonPubConstructor(true);
+                foundNonPubConstructor = true;
             }
         }
-    }
-
-    @Override
-    public void addSummary(final Content summariesList, final Content content)
-    {
-        summariesList.add(content);
     }
 
     @Override
@@ -57,26 +52,19 @@ public class MarkdownConstructorWriterImpl extends ConstructorWriterImpl
     }
 
     @Override
-    public void setFoundNonPubConstructor(final boolean foundNonPubConstructor)
-    {
-        super.setFoundNonPubConstructor(foundNonPubConstructor);
-        this.foundNonPubConstructor = foundNonPubConstructor;
-    }
-
-    @Override
     protected Table<Element> createSummaryTable()
     {
         List<HtmlStyle> bodyRowStyles;
 
         if (foundNonPubConstructor) {
-            bodyRowStyles = Arrays.asList(HtmlStyle.colFirst, HtmlStyle.colConstructorName,
-                HtmlStyle.colLast);
+            bodyRowStyles = Arrays.asList(HtmlStyles.colFirst, HtmlStyles.colConstructorName,
+                HtmlStyles.colLast);
         } else {
-            bodyRowStyles = Arrays.asList(HtmlStyle.colConstructorName, HtmlStyle.colLast);
+            bodyRowStyles = Arrays.asList(HtmlStyles.colConstructorName, HtmlStyles.colLast);
         }
 
         return new MarkdownAwareTable<Element>(
-            HtmlStyle.summaryTable)
+            HtmlStyles.summaryTable)
             .setCaption(contents.constructors)
             .setHeader(getSummaryTableHeader(typeElement))
             .setColumnStyles(bodyRowStyles);

@@ -1,7 +1,7 @@
 package com.communi.suggestu.javamark.doclet.utils;
 
 import jdk.javadoc.internal.doclets.formats.html.TableHeader;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.html.Content;
 
 import java.lang.reflect.Field;
 import java.util.List;

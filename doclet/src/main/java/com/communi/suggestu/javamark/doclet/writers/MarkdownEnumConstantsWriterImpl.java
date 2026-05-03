@@ -9,37 +9,32 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.utils.HtmlIdUtils;
 import com.communi.suggestu.javamark.doclet.content.VitepressTableContent;
-import jdk.javadoc.internal.doclets.formats.html.EnumConstantWriterImpl;
-import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
+import jdk.javadoc.internal.doclets.formats.html.EnumConstantWriter;
 import jdk.javadoc.internal.doclets.formats.html.Table;
-import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
-import jdk.javadoc.internal.doclets.formats.html.markup.Text;
-import jdk.javadoc.internal.doclets.toolkit.Content;
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles;
+import jdk.javadoc.internal.html.Content;
+import jdk.javadoc.internal.html.ContentBuilder;
+import jdk.javadoc.internal.html.HtmlStyle;
+import jdk.javadoc.internal.html.Text;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
+public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriter
 {
-    public MarkdownEnumConstantsWriterImpl(final SubWriterHolderWriter writer, final TypeElement typeElement)
+    public MarkdownEnumConstantsWriterImpl(final ClassWriter writer)
     {
-        super(writer, typeElement);
+        super(writer);
     }
 
     @Override
-    public Content getMemberSummaryHeader(final TypeElement typeElement, final Content content)
+    public Content getMemberSummaryHeader(final Content content)
     {
         var builder = new ContentBuilder();
         writer.addSummaryHeader(this, builder);
         return builder;
-    }
-
-    @Override
-    public void addSummary(final Content summariesList, final Content content)
-    {
-        summariesList.add(content);
     }
 
     @Override
@@ -51,10 +46,10 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     @Override
     protected Table<Element> createSummaryTable()
     {
-        return new MarkdownAwareTable<Element>(HtmlStyle.summaryTable)
+        return new MarkdownAwareTable<Element>(HtmlStyles.summaryTable)
             .setCaption(contents.getContent("doclet.Enum_Constants"))
             .setHeader(getSummaryTableHeader(typeElement))
-            .setColumnStyles(HtmlStyle.colFirst, HtmlStyle.colLast);
+            .setColumnStyles(HtmlStyles.colFirst, HtmlStyles.colLast);
     }
 
     @Override
@@ -72,7 +67,7 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     }
 
     @Override
-    public Content getEnumConstantsDetailsHeader(final TypeElement typeElement, Content content)
+    public Content getEnumConstantsDetailsHeader(Content content)
     {
         content = new ContentBuilder();
         content.add(contents.enumConstantDetailLabel).add(Constants.MARKDOWN_NEW_LINE);
@@ -96,7 +91,7 @@ public class MarkdownEnumConstantsWriterImpl extends EnumConstantWriterImpl
     }
 
     @Override
-    public Content getEnumConstantsHeader(final VariableElement enumConstant, final Content enumConstantsDetails)
+    public Content getEnumConstantsHeader(final VariableElement enumConstant)
     {
         var body = new NoneEncodingContentBuilder();
         var header = Text.of(name(enumConstant));
