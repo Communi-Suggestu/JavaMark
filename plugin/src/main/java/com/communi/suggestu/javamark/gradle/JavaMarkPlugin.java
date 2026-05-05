@@ -26,7 +26,8 @@ public class JavaMarkPlugin implements Plugin<Project>
         "jdk.javadoc/jdk.javadoc.internal.doclets.formats.html.markup=ALL-UNNAMED",
         "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.util=ALL-UNNAMED",
         "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit.taglets=ALL-UNNAMED",
-        "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit=ALL-UNNAMED"
+        "jdk.javadoc/jdk.javadoc.internal.doclets.toolkit=ALL-UNNAMED",
+        "jdk.javadoc/jdk.javadoc.internal.html=ALL-UNNAMED"
     );
 
     private static final List<String> OPENS = List.of(
