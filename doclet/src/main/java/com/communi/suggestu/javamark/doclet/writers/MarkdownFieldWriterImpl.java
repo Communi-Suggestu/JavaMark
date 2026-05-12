@@ -130,4 +130,10 @@ public class MarkdownFieldWriterImpl extends FieldWriter
         
         return wrapper.getWrapper();
     }
+
+    @Override
+    public void buildSummary(final Content summariesList, final Content content)
+    {
+        summariesList.add(content);
+    }
 }

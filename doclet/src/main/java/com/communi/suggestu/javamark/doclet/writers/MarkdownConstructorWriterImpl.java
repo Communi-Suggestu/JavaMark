@@ -132,4 +132,10 @@ public class MarkdownConstructorWriterImpl extends ConstructorWriter
 
         return wrapper.getWrapper();
     }
+
+    @Override
+    public void buildSummary(final Content summariesList, final Content content)
+    {
+        summariesList.add(content);
+    }
 }

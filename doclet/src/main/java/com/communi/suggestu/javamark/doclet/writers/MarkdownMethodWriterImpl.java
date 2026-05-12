@@ -135,4 +135,10 @@ public class MarkdownMethodWriterImpl extends MethodWriter
 
         return wrapper.getWrapper();
     }
+
+    @Override
+    public void buildSummary(final Content summariesList, final Content content)
+    {
+        summariesList.add(content);
+    }
 }

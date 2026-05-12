@@ -1,5 +1,7 @@
 package com.communi.suggestu.javamark.doclet.writers;
 
+import com.communi.suggestu.javamark.doclet.content.ContainerContent;
+import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.content.MarkdownAwareContentBuilder;
 import com.communi.suggestu.javamark.doclet.content.MarkdownAwareTable;
 import com.communi.suggestu.javamark.doclet.utils.Constants;
@@ -32,7 +34,7 @@ public class MarkdownNestedClassWriterImpl extends NestedClassWriter
     {
         var builder = new ContentBuilder();
         writer.addSummaryHeader(this, builder);
-        return builder;
+        return new ContainerContent(new ContentBuilder(), builder, ContainerContent.Type.INFO);
     }
 
     @Override
@@ -82,5 +84,13 @@ public class MarkdownNestedClassWriterImpl extends NestedClassWriter
             .setCaption(contents.getContent("doclet.Nested_Classes"))
             .setHeader(getSummaryTableHeader(typeElement))
             .setColumnStyles(bodyRowStyles);
+    }
+
+
+
+    @Override
+    public void buildSummary(final Content summariesList, final Content content)
+    {
+        summariesList.add(content);
     }
 }

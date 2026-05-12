@@ -131,4 +131,10 @@ public class MarkdownAnnotationTypeMemberWriterImpl extends AnnotationTypeMember
 
         return wrapper.getWrapper();
     }
+
+    @Override
+    public void buildSummary(final Content summariesList, final Content content)
+    {
+        summariesList.add(content);
+    }
 }

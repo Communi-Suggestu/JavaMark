@@ -98,6 +98,12 @@ public class ContainerContent extends Content
     private final Content header;
     private final Type    type;
 
+    @Override
+    public Content add(final Content content)
+    {
+        return this.content.add(content);
+    }
+
     public ContainerContent(final Content content, final Type type)
     {
         this.content = content;
