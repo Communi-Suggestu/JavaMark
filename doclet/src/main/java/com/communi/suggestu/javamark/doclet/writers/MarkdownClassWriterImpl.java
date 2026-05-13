@@ -5,30 +5,33 @@ import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.DocTreeVisitor;
 import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.StartElementTree;
+import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
 import jdk.javadoc.internal.doclets.formats.html.HtmlConfiguration;
-import jdk.javadoc.internal.doclets.formats.html.SubWriterHolderWriter;
-import jdk.javadoc.internal.doclets.toolkit.util.DocPath;
+import jdk.javadoc.internal.doclets.toolkit.util.ClassTree;
 import jdk.javadoc.internal.html.Content;
 import jdk.javadoc.internal.html.Entity;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 
-public class MarkdownSubWriterHolderWriter extends SubWriterHolderWriter
+public class MarkdownClassWriterImpl extends ClassWriter
 {
-    public MarkdownSubWriterHolderWriter(final HtmlConfiguration configuration, final DocPath filename)
+    /**
+     * @param configuration the configuration data for the doclet
+     * @param typeElement   the class being documented.
+     * @param classTree     the class tree for the given class.
+     */
+    public MarkdownClassWriterImpl(
+        final HtmlConfiguration configuration,
+        final TypeElement typeElement,
+        final ClassTree classTree)
     {
-        super(configuration, filename);
-    }
-
-    @Override
-    public void buildPage()
-    {
-        // This writer acts as a helper for member rendering and does not build a page directly.
+        super(configuration, typeElement, classTree);
     }
 
     @Override

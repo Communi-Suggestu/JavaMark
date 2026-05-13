@@ -99,7 +99,7 @@ public class MarkdownMethodWriterImpl extends MethodWriter
     @Override
     public Content getMemberList()
     {
-        return new ContentBuilder();
+        return new NoneEncodingContentBuilder();
     }
 
     @Override
