@@ -40,7 +40,7 @@ public class PackageLinkProvider {
         for (int i = common; i < targetHierarchy.size(); i++) {
             rel.append(targetHierarchy.get(i)).append("/");
         }
-        rel.append("index.md");
+        rel.append("index");
         return rel.toString();
     }
 
