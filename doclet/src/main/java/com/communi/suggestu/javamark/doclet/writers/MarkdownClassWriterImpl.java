@@ -1,6 +1,7 @@
 package com.communi.suggestu.javamark.doclet.writers;
 
 import com.communi.suggestu.javamark.doclet.content.NoneEncodingContentBuilder;
+import com.communi.suggestu.javamark.doclet.utils.MarkdownCommentSanitizer;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.DocTreeVisitor;
 import com.sun.source.doctree.EndElementTree;
@@ -17,7 +18,6 @@ import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
@@ -52,29 +52,8 @@ public class MarkdownClassWriterImpl extends ClassWriter
     @Override
     public Content getMemberListItem(final Content member)
     {
-        //We need to do some processing here.
-        var stringWriter = new StringWriter();
-        try
-        {
-            member.write(stringWriter, "\n", true);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        var content = stringWriter.toString();
-        var lines = Arrays.stream(content.split("\n")).toList();
-
-        var contentBuilder = new NoneEncodingContentBuilder();
-        for (final String line : lines)
-        {
-            if (!line.isBlank()) {
-                contentBuilder.add(line + "\n");
-            }
-        }
-
-        return contentBuilder;
+        // Keep member output intact; comment sanitization is applied at the source.
+        return member;
     }
 
     /**
@@ -100,11 +79,28 @@ public class MarkdownClassWriterImpl extends ClassWriter
         Content result = commentTagsToContent(element, tags, first, inSummary);
         if (!result.isEmpty())
         {
-            target.add(result);
+            target.add(sanitizeCommentContent(result));
         }
         if (tags.isEmpty())
         {
             target.add(Entity.NO_BREAK_SPACE);
+        }
+    }
+
+    private Content sanitizeCommentContent(final Content content)
+    {
+        try
+        {
+            var writer = new StringWriter();
+            content.write(writer, "\n", true);
+
+            return new NoneEncodingContentBuilder().add(
+                MarkdownCommentSanitizer.stripBlankLinesInsideDivBlocks(writer.toString())
+            );
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 
