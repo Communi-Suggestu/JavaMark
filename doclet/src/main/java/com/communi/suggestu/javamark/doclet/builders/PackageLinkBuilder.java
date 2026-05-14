@@ -52,5 +52,21 @@ public class PackageLinkBuilder {
             return linkText;
         return "[" + linkText + "](" + relPath + ")";
     }
+
+
+    /**
+     * Builds a Markdown link from sourcePackage to targetPackage.
+     * If no link can be generated, emits just the required name in the display mode.
+     */
+    public String buildHtml(PackageElement sourcePackage, PackageElement targetPackage) {
+        String linkText = displayMode == DisplayMode.FULLY_QUALIFIED_NAME
+            ? targetPackage.getQualifiedName().toString()
+            : targetPackage.getSimpleName().toString();
+        String relPath = linkProvider.getRelativeLink(sourcePackage, targetPackage);
+        if (relPath == null)
+            return linkText;
+        
+        return "<a href=\"%s\" title=\"%s\">%s</a>".formatted(relPath, linkText, linkText);
+    }
 }
 

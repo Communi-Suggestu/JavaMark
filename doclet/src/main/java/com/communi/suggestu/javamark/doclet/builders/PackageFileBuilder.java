@@ -103,13 +103,13 @@ public class PackageFileBuilder {
         if (parent == null && children.isEmpty()) return "";
         TableBuilder table = new HtmlTableBuilder().withHeaders("Package", "Description");
         if (parent != null) {
-            String link = packageLinkBuilder.withDisplayMode(PackageLinkBuilder.DisplayMode.FULLY_QUALIFIED_NAME).build(pkg, parent);
+            String link = packageLinkBuilder.withDisplayMode(PackageLinkBuilder.DisplayMode.FULLY_QUALIFIED_NAME).buildHtml(pkg, parent);
             String doc = ElementUtils.getDocComment(parent, docTrees);
             String desc = (doc != null && !doc.isEmpty()) ? doc : "";
             table.addRow(link, desc);
         }
         for (PackageElement child : children) {
-            String link = packageLinkBuilder.withDisplayMode(PackageLinkBuilder.DisplayMode.FULLY_QUALIFIED_NAME).build(pkg, child);
+            String link = packageLinkBuilder.withDisplayMode(PackageLinkBuilder.DisplayMode.FULLY_QUALIFIED_NAME).buildHtml(pkg, child);
             String doc = ElementUtils.getDocComment(child, docTrees);
             String desc = (doc != null && !doc.isEmpty()) ? doc : "";
             table.addRow(link, desc);
