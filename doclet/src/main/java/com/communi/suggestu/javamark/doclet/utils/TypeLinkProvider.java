@@ -57,7 +57,7 @@ public class TypeLinkProvider {
 
     private String getTypeFileName(TypeMirror type) {
         TypeElement el = typeUniverse.asTypeElement(type);
-        return typeFilePath(el) + ".md";
+        return typeFilePath(el);
     }
 
     private String typeFilePath(TypeElement typeElement)

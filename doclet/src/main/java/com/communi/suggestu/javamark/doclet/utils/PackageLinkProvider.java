@@ -25,7 +25,7 @@ public class PackageLinkProvider {
             return null;
         }
         if (sourcePackage.getQualifiedName().contentEquals(targetPackage.getQualifiedName())) {
-            return "index.md";
+            return "index";
         }
         List<String> sourceHierarchy = getPackageHierarchy(sourcePackage);
         List<String> targetHierarchy = getPackageHierarchy(targetPackage);
