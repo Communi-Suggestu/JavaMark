@@ -14,7 +14,10 @@ import jdk.javadoc.internal.html.Entity;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
@@ -49,7 +52,29 @@ public class MarkdownClassWriterImpl extends ClassWriter
     @Override
     public Content getMemberListItem(final Content member)
     {
-        return member;
+        //We need to do some processing here.
+        var stringWriter = new StringWriter();
+        try
+        {
+            member.write(stringWriter, "\n", true);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        var content = stringWriter.toString();
+        var lines = Arrays.stream(content.split("\n")).toList();
+
+        var contentBuilder = new NoneEncodingContentBuilder();
+        for (final String line : lines)
+        {
+            if (!line.isBlank()) {
+                contentBuilder.add(line + "\n");
+            }
+        }
+
+        return contentBuilder;
     }
 
     /**
