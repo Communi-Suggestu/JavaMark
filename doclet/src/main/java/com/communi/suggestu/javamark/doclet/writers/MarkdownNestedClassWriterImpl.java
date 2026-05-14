@@ -4,6 +4,7 @@ import com.communi.suggestu.javamark.doclet.content.ContainerContent;
 import com.communi.suggestu.javamark.doclet.content.ContentWrapper;
 import com.communi.suggestu.javamark.doclet.content.MarkdownAwareContentBuilder;
 import com.communi.suggestu.javamark.doclet.content.MarkdownAwareTable;
+import com.communi.suggestu.javamark.doclet.content.NoneEncodingContentBuilder;
 import com.communi.suggestu.javamark.doclet.utils.Constants;
 import com.sun.source.doctree.DocTree;
 import jdk.javadoc.internal.doclets.formats.html.ClassWriter;
@@ -42,7 +43,12 @@ public class MarkdownNestedClassWriterImpl extends NestedClassWriter
     {
         var builder = new ContentBuilder();
         writer.addInheritedSummaryHeader(this, tElement, builder);
-        return builder;
+
+        return new ContainerContent(
+            new NoneEncodingContentBuilder(),
+            builder,
+            ContainerContent.Type.TIP
+        );
     }
 
     @Override

@@ -65,6 +65,21 @@ public class TypeLinkBuilder
     }
 
     /**
+     * Builds an HTML link from sourceType to targetType.
+     * If no link can be generated, emits just the required name in the display mode.
+     */
+    public String buildHtml(Element sourceType, TypeMirror targetType)
+    {
+        String linkText = typeDisplayNameBuilder.build(targetType);
+        String relPath = linkProvider.getRelativeLink(sourceType, targetType);
+        if (relPath == null || sourceType.asType() == targetType)
+        {
+            return linkText;
+        }
+        return "<a href=\"%s\" title=\"%s\">%s</a>".formatted(relPath, linkText, linkText);
+    }
+
+    /**
      * Builds a Markdown link from sourceType to targetType.
      * If no link can be generated, emits just the required name in the display mode.
      */

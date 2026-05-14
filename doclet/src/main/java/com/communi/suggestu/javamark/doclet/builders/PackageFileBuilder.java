@@ -87,7 +87,7 @@ public class PackageFileBuilder {
         if (types == null || types.isEmpty()) return "No types found.";
         TableBuilder table = new HtmlTableBuilder().withHeaders("Class", "Description");
         for (TypeElement type : types) {
-            String link = typeLinkBuilder.withDisplayMode(TypeDisplayNameBuilder.DisplayMode.SIMPLE_NAME).build(in, type.asType());
+            String link = typeLinkBuilder.withDisplayMode(TypeDisplayNameBuilder.DisplayMode.SIMPLE_NAME).buildHtml(in, type.asType());
             String doc = ElementUtils.getDocComment(type, docTrees);
             if (doc != null && doc.endsWith("\n"))
                 doc = doc.substring(0, doc.length() - 1);

@@ -47,6 +47,19 @@ public class MarkdownPropertyWriterImpl extends PropertyWriter
     }
 
     @Override
+    public Content getInheritedSummaryHeader(final TypeElement tElement)
+    {
+        var builder = new ContentBuilder();
+        writer.addInheritedSummaryHeader(this, tElement, builder);
+
+        return new ContainerContent(
+            new NoneEncodingContentBuilder(),
+            builder,
+            ContainerContent.Type.TIP
+        );
+    }
+
+    @Override
     public Content getInheritedSummaryLinks()
     {
         return new MarkdownAwareContentBuilder();

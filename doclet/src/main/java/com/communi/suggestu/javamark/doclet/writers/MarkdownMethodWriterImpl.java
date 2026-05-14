@@ -85,7 +85,12 @@ public class MarkdownMethodWriterImpl extends MethodWriter
     {
         var builder = new ContentBuilder();
         writer.addInheritedSummaryHeader(this, tElement, builder);
-        return builder;
+
+        return new ContainerContent(
+            new NoneEncodingContentBuilder(),
+            builder,
+            ContainerContent.Type.TIP
+        );
     }
 
     @Override
